@@ -3,7 +3,7 @@
 
 # PyTorch (CPU-only version)
 # No CUDA dependencies - all training and inference on CPU
-torch>=2.0.0,<2.2.0
+torch==2.2.0
 
 # NumPy for numerical operations and array handling
 numpy>=1.24.0,<1.27.0
