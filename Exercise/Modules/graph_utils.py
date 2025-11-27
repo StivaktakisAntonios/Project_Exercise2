@@ -6,7 +6,7 @@ distance computation with batched processing for memory efficiency.
 """
 
 import numpy as np
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List, Set, Dict
 from tqdm import tqdm
 
 
@@ -171,3 +171,174 @@ def get_graph_statistics(indices: np.ndarray, distances: np.ndarray) -> dict:
     }
     
     return stats
+
+
+def symmetrize_graph(
+    indices: np.ndarray,
+    distances: np.ndarray
+) -> Tuple[List[Set[int]], Dict[Tuple[int, int], dict]]:
+    """
+    Convert directed k-NN graph to undirected graph.
+    
+    For each directed edge u→v in the k-NN graph, ensures the reverse edge
+    v→u exists. Tracks edge mutuality (whether both directions existed in
+    original k-NN graph) for subsequent weight assignment.
+    
+    Args:
+        indices: Neighbor indices from build_knn(), shape [n, k]
+        distances: Neighbor distances from build_knn(), shape [n, k]
+    
+    Returns:
+        adjacency: List of sets, adjacency[i] = set of neighbors of node i
+                  Represents undirected graph: if j in adjacency[i], then i in adjacency[j]
+        edge_info: Dict mapping (u, v) tuples to edge properties
+                  Format: {(u, v): {'distance': float, 'mutual': bool}}
+                  where u < v (canonical edge representation)
+                  - distance: Average distance if mutual, single direction if not
+                  - mutual: True if both u→v and v→u existed in original k-NN graph
+    
+    Example:
+        >>> indices = np.array([[1, 2], [0, 2], [0, 1]])  # 3 points, k=2
+        >>> distances = np.array([[1.0, 2.0], [1.0, 1.5], [2.0, 1.5]])
+        >>> adjacency, edge_info = symmetrize_graph(indices, distances)
+        >>> # All edges are mutual in this case
+        >>> print(edge_info[(0, 1)])  # {'distance': 1.0, 'mutual': True}
+    """
+    n, k = indices.shape
+    
+    # Track directed edges and their distances
+    directed_edges = {}  # (u, v) -> distance
+    
+    # Collect all directed edges from k-NN graph
+    for u in range(n):
+        for j in range(k):
+            v = indices[u, j]
+            dist = distances[u, j]
+            directed_edges[(u, v)] = dist
+    
+    # Build undirected graph and edge info
+    adjacency = [set() for _ in range(n)]
+    edge_info = {}
+    processed_edges = set()  # Track which undirected edges we've processed
+    
+    # Process all directed edges
+    for (u, v), dist_uv in directed_edges.items():
+        # Canonical edge representation (smaller index first)
+        edge_key = (min(u, v), max(u, v))
+        
+        if edge_key in processed_edges:
+            continue  # Already processed this undirected edge
+        
+        processed_edges.add(edge_key)
+        
+        # Check if reverse edge exists
+        reverse_exists = (v, u) in directed_edges
+        
+        if reverse_exists:
+            # Mutual edge: both u→v and v→u exist
+            dist_vu = directed_edges[(v, u)]
+            avg_distance = (dist_uv + dist_vu) / 2.0
+            
+            edge_info[edge_key] = {
+                'distance': float(avg_distance),
+                'mutual': True
+            }
+        else:
+            # Non-mutual edge: only one direction exists
+            edge_info[edge_key] = {
+                'distance': float(dist_uv),
+                'mutual': False
+            }
+        
+        # Add to adjacency list (both directions for undirected graph)
+        adjacency[u].add(v)
+        adjacency[v].add(u)
+    
+    return adjacency, edge_info
+
+
+def assign_edge_weights(edge_info: Dict[Tuple[int, int], dict]) -> Dict[Tuple[int, int], int]:
+    """
+    Assign integer weights to edges based on mutuality.
+    
+    Weight assignment reflects edge strength in the k-NN graph:
+    - Mutual edges (both directions in original k-NN) get weight = 2
+    - Non-mutual edges (only one direction) get weight = 1
+    
+    These weights are used by KaHIP for balanced graph partitioning,
+    where stronger (mutual) connections are preserved within partitions.
+    
+    Args:
+        edge_info: Dict from symmetrize_graph() with edge properties
+                  Format: {(u, v): {'distance': float, 'mutual': bool}}
+                  where u < v (canonical edge representation)
+    
+    Returns:
+        edge_weights: Dict mapping (u, v) to integer weight
+                     weight = 2 if edge_info[(u, v)]['mutual'] is True
+                     weight = 1 if edge_info[(u, v)]['mutual'] is False
+    
+    Example:
+        >>> edge_info = {(0, 1): {'distance': 1.5, 'mutual': True},
+        ...              (0, 2): {'distance': 2.0, 'mutual': False}}
+        >>> weights = assign_edge_weights(edge_info)
+        >>> print(weights)  # {(0, 1): 2, (0, 2): 1}
+    """
+    edge_weights = {}
+    
+    for edge_key, info in edge_info.items():
+        if info['mutual']:
+            edge_weights[edge_key] = 2
+        else:
+            edge_weights[edge_key] = 1
+    
+    return edge_weights
+
+
+def build_weighted_graph(
+    indices: np.ndarray,
+    distances: np.ndarray
+) -> Tuple[List[Set[int]], Dict[Tuple[int, int], dict]]:
+    """
+    Build weighted undirected graph from k-NN graph.
+    
+    Combines symmetrization and weight assignment into single convenience function.
+    This is the main entry point for converting k-NN graph to weighted undirected
+    graph ready for KaHIP partitioning.
+    
+    Args:
+        indices: Neighbor indices from build_knn(), shape [n, k]
+        distances: Neighbor distances from build_knn(), shape [n, k]
+    
+    Returns:
+        adjacency: List of sets, adjacency[i] = set of neighbors of node i
+                  Represents undirected graph structure
+        edge_data: Dict mapping (u, v) to complete edge information
+                  Format: {(u, v): {'distance': float, 'mutual': bool, 'weight': int}}
+                  where u < v (canonical edge representation)
+                  - distance: Euclidean distance (averaged if mutual)
+                  - mutual: True if both u→v and v→u in original k-NN
+                  - weight: 2 if mutual, 1 if non-mutual
+    
+    Example:
+        >>> points = np.random.randn(100, 10).astype(np.float32)
+        >>> indices, distances = build_knn(points, k=5)
+        >>> adjacency, edge_data = build_weighted_graph(indices, distances)
+        >>> # Use edge_data for KaHIP partitioning
+    """
+    # Symmetrize graph and get edge info
+    adjacency, edge_info = symmetrize_graph(indices, distances)
+    
+    # Assign weights based on mutuality
+    edge_weights = assign_edge_weights(edge_info)
+    
+    # Combine into single edge_data dict
+    edge_data = {}
+    for edge_key, info in edge_info.items():
+        edge_data[edge_key] = {
+            'distance': info['distance'],
+            'mutual': info['mutual'],
+            'weight': edge_weights[edge_key]
+        }
+    
+    return adjacency, edge_data
