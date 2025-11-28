@@ -20,6 +20,10 @@ The algorithm combines:
 - Multi-layer perceptron (MLP) classifier for learning partition assignments
 - Multi-probe search strategy for efficient approximate nearest neighbor retrieval
 
+This implementation follows the specification of Assignment 2 (Κ23γ) and produces output compatible with Assignment 1 methods (LSH, Hypercube, IVFFlat, IVFPQ) for direct performance comparison.
+
+**Note on k-NN Graph Construction:** The current implementation uses brute-force Euclidean distance computation for k-NN graph construction. For optimal performance on large datasets, integration with Assignment 1's optimized nearest neighbor methods (e.g., LSH or IVF-based approximate k-NN) can be used as a preprocessing step.
+
 ## Project Structure
 
 ```
@@ -245,6 +249,32 @@ python Exercise/Modules/test_models.py
 - **Deterministic**: Fixed random seeds ensure reproducible results
 - **Memory efficient**: Batch processing for large datasets
 - **Modular design**: Clear separation between modules for maintainability
+- **Assignment 1 Compatibility**: Output format matches Assignment 1 for direct comparison with LSH, Hypercube, IVFFlat, and IVFPQ methods
+
+## Experimental Comparison
+
+For the experimental report comparing Neural LSH with Assignment 1 methods:
+
+1. **Run Neural LSH experiments**:
+   ```bash
+   python experiments/run_experiments.py --all
+   ```
+
+2. **Compare metrics** (from both assignments):
+   - Recall@N: Fraction of true neighbors found
+   - Average AF: Approximation factor (distance ratio)
+   - QPS: Queries per second (throughput)
+   - tApproximate: Average query time
+   - tTrue: Average ground truth computation time
+
+3. **Hyperparameter tuning**: Use `experiments/configs/` to test different settings:
+   - Number of partitions (`m`)
+   - k-NN graph size (`k`)
+   - MLP architecture (`layers`, `nodes`)
+   - Training parameters (`epochs`, `batch_size`, `lr`)
+   - Multi-probe depth (`T`)
+
+Results will be saved in `experiments/results/` as JSON files for analysis.
 
 ## Troubleshooting
 
