@@ -234,12 +234,33 @@ def partition_graph(
     """
     import subprocess
     import shutil
+    import os
     
-    # Check if kaffpa is available
-    if shutil.which('kaffpa') is None:
+    # Expand ~ in PATH search
+    expanded_paths = []
+    for path in os.environ.get('PATH', '').split(':'):
+        expanded_paths.append(os.path.expanduser(path))
+    
+    # Check common KaHIP installation locations
+    kaffpa_locations = [
+        shutil.which('kaffpa'),  # Standard PATH
+        os.path.expanduser('~/KaHIP/build/kaffpa'),
+        os.path.expanduser('~/KaHIP/deploy/kaffpa'),
+        '/usr/local/bin/kaffpa',
+        '/usr/bin/kaffpa'
+    ]
+    
+    kaffpa_path = None
+    for loc in kaffpa_locations:
+        if loc and os.path.isfile(loc) and os.access(loc, os.X_OK):
+            kaffpa_path = loc
+            break
+    
+    if kaffpa_path is None:
         raise FileNotFoundError(
-            "KaHIP's 'kaffpa' executable not found in PATH. "
+            "KaHIP's 'kaffpa' executable not found in PATH or common locations. "
             "Please install KaHIP before using graph partitioning. "
+            "Searched locations: ~/KaHIP/build/, ~/KaHIP/deploy/, /usr/local/bin/, /usr/bin/. "
             "See: https://github.com/KaHIP/KaHIP"
         )
     
@@ -272,7 +293,7 @@ def partition_graph(
         imbalance_pct = int(imbalance * 100)
         
         cmd = [
-            'kaffpa',
+            kaffpa_path,  # Use full path instead of 'kaffpa'
             graph_file,
             f'--k={n_parts}',
             f'--imbalance={imbalance_pct}',

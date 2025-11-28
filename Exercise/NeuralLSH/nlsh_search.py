@@ -93,6 +93,8 @@ Examples:
     parser.add_argument('-range', '--range_search', type=str, default='true',
                         choices=['true', 'false'],
                         help='Compute R-near neighbors (default: true)')
+    parser.add_argument('--max_queries', type=int, default=None,
+                        help='Limit number of queries to process (default: all)')
     
     return parser.parse_args()
 
@@ -121,6 +123,8 @@ def main():
     print(f"R radius:     {args.radius}")
     print(f"T bins:       {args.top_bins}")
     print(f"Range search: {range_search}")
+    if args.max_queries:
+        print(f"Max queries:  {args.max_queries}")
     print("=" * 80)
     
     # Phase 1: Load index
@@ -143,6 +147,9 @@ def main():
     try:
         dataset = load_points(args.dataset, args.type)
         queries = load_queries(args.queries, args.type)
+        # Optionally limit number of queries for faster iteration
+        if args.max_queries is not None and args.max_queries > 0:
+            queries = queries[:args.max_queries]
         print(f"  Dataset: {dataset.shape[0]} points, dimension {dataset.shape[1]}")
         print(f"  Queries: {queries.shape[0]} queries")
         print(f"  Time: {time.time() - t_start:.2f}s")
@@ -176,7 +183,7 @@ def main():
         )
         print(f"  Search complete")
         print(f"  Total time: {time.time() - t_start:.2f}s")
-        print(f"  QPS: {aggregate_metrics['qps']:.2f}")
+        print(f"  QPS (approx only): {aggregate_metrics['qps']:.2f}")
     except Exception as e:
         print(f"ERROR: Search failed: {e}", file=sys.stderr)
         sys.exit(1)
