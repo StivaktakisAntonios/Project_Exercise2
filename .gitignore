@@ -1,6 +1,58 @@
+# APM Framework
 .apm/
+
+# GitHub workflows
 .github/
+
+# Python
 __pycache__/
+*.py[cod]
+*$py.class
 *.pyc
+*.so
+.Python
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
 .venv/
+venv/
+ENV/
+env/
+
+# PyTorch models
+*.pth
+*.pt
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Raw data files
 Raw_Data/
+
+# Generated indices
+indices/
+experiments/indices/
+
+# Results and logs
+experiments/results/
+*.log
+output_*.txt
+
+# Temporary files
+tmp_index_test/
+*.tmp
+*.temp
+
+# KaHIP files
+*.metis
+*.partition
