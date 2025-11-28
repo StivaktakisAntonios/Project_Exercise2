@@ -88,7 +88,7 @@ def write_kahip_graph(
     
     METIS format specification:
     - Line 1: n_nodes n_edges format_flags
-      - format_flags = 011: vertex weights (1), edge weights (1), no vertex size (1)
+      - format_flags = 11: vertex weights (1), edge weights (1), no vertex size (1)
     - Lines 2 to n+1: For each node (1-indexed in file):
       - [vertex_weight] neighbor1 edge_weight1 neighbor2 edge_weight2 ...
     
@@ -103,7 +103,7 @@ def write_kahip_graph(
     
     Example file format:
         ```
-        3 3 011
+        3 3 11
         1 2 2 3 1
         1 1 2 3 2
         1 1 1 2 2
@@ -116,8 +116,8 @@ def write_kahip_graph(
     
     with open(output_path, 'w') as f:
         # Header line: n_nodes n_edges format_flags
-        # Format 011: vertex weights=1, edge weights=1, no vertex size=1
-        f.write(f"{n_nodes} {n_edges} 011\n")
+        # Format 11: vertex weights=1, edge weights=1, no vertex size=1
+        f.write(f"{n_nodes} {n_edges} 11\n")
         
         # Write each node's adjacency list
         for node_id in range(n_nodes):
@@ -375,7 +375,7 @@ def partition_knn_graph(
         >>> indices, distances = build_knn(points, k=10)
         >>> labels = partition_knn_graph(indices, distances, n_parts=100)
     """
-    from graph_utils import build_weighted_graph
+    from Exercise.Modules.graph_utils import build_weighted_graph
     
     # Build weighted undirected graph
     adjacency, edge_data = build_weighted_graph(indices, distances)

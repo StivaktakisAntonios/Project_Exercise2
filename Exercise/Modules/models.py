@@ -198,12 +198,41 @@ def train_partition_classifier(
         ...     points, labels, input_dim=784, num_partitions=100, epochs=10
         ... )
     """
-    import numpy as np
     from torch.utils.data import TensorDataset, DataLoader
+
+    # Basic argument checks
+    if not (0.0 < val_split < 1.0):
+        raise ValueError(
+            f"val_split must be in (0, 1), got {val_split}"
+        )
     
     # Set random seeds for reproducibility
     torch.manual_seed(seed)
     np.random.seed(seed)
+
+    # Sanity checks on data shapes / label ranges
+    if points.ndim != 2:
+        raise ValueError(f"points must be a 2D array, got shape {points.shape}")
+    
+    if points.shape[1] != input_dim:
+        raise ValueError(
+            f"input_dim={input_dim} but points have dimensionality {points.shape[1]}"
+        )
+    
+    if labels.ndim != 1:
+        raise ValueError(f"labels must be a 1D array, got shape {labels.shape}")
+    
+    if labels.shape[0] != points.shape[0]:
+        raise ValueError(
+            f"labels length {labels.shape[0]} does not match "
+            f"number of points {points.shape[0]}"
+        )
+    
+    if labels.min() < 0 or labels.max() >= num_partitions:
+        raise ValueError(
+            f"Partition labels out of range: min={labels.min()}, max={labels.max()}, "
+            f"expected in [0, {num_partitions - 1}]"
+        )
     
     n_samples = len(points)
     n_val = int(n_samples * val_split)
