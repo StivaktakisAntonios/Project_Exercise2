@@ -320,7 +320,3 @@ export PATH=$PATH:/path/to/KaHIP/deploy
 
 - KaHIP: https://github.com/KaHIP/KaHIP
 - PyTorch: https://pytorch.org/
-
-## Άδεια Χρήσης
-
-Ακαδημαϊκό έργο - Πανεπιστήμιο Αθηνών, 2025
