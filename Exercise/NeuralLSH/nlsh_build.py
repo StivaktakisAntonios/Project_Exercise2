@@ -4,7 +4,7 @@ nlsh_build.py — Neural LSH Index Builder
 
 Builds Neural LSH index through the following pipeline:
 1. Load dataset
-2. Build k-NN graph
+2. Build k-NN graph (brute-force; for production, integrate Assignment 1 methods)
 3. Partition k-NN graph using KaHIP (via partition_knn_graph)
 4. Train MLP classifier on partition labels
 5. Save index (model + inverted file + metadata)
@@ -79,6 +79,8 @@ Examples:
     # k-NN graph parameters
     parser.add_argument('--knn', type=int, default=10,
                         help='Number of nearest neighbors (default: 10)')
+    parser.add_argument('--max_points', type=int, default=None,
+                        help='Maximum points for k-NN graph (default: all). Use for large datasets like SIFT.')
     
     # Partitioning parameters
     parser.add_argument('-m', '--partitions', type=int, default=100,
@@ -127,6 +129,7 @@ def main():
     print(f"Type:         {args.type}")
     print(f"Device:       {DEVICE}")
     print(f"k-NN:         {args.knn}")
+    print(f"Max points:   {args.max_points if args.max_points else 'all'}")
     print(f"Partitions:   {args.partitions}")
     print(f"Imbalance:    {args.imbalance}")
     print(f"KaHIP mode:   {args.kahip_mode} ({'FAST' if args.kahip_mode == 0 else 'ECO' if args.kahip_mode == 1 else 'STRONG'})")
@@ -154,10 +157,17 @@ def main():
     
     # Phase 2: Build k-NN graph
     print("\n[2/5] Building k-NN graph...")
+    if args.max_points:
+        print(f"  Note: Limiting to first {args.max_points} points for efficiency")
     t_start = time.time()
     try:
-        knn_indices, knn_distances = build_knn(dataset, args.knn, show_progress=True)
-        print(f"  Built k-NN graph with k={args.knn}")
+        knn_indices, knn_distances = build_knn(
+            dataset, args.knn, 
+            max_points=args.max_points,
+            show_progress=True
+        )
+        actual_points = knn_indices.shape[0]
+        print(f"  Built k-NN graph with k={args.knn} for {actual_points} points")
         print(f"  Time: {time.time() - t_start:.2f}s")
     except Exception as e:
         print(f"ERROR: Failed to build k-NN graph: {e}", file=sys.stderr)
@@ -190,8 +200,11 @@ def main():
     print("\n[4/5] Training MLP classifier...")
     t_start = time.time()
     try:
+        # Use subset of data if max_points was specified
+        training_data = dataset[:actual_points] if args.max_points else dataset
+        
         model, history = train_partition_classifier(
-            points=dataset,
+            points=training_data,
             labels=labels,
             input_dim=dataset.shape[1],
             num_partitions=args.partitions,
@@ -221,9 +234,11 @@ def main():
             'dataset_type': args.type,
             'dataset_path': args.dataset,
             'num_points': int(dataset.shape[0]),
+            'num_points_used': int(actual_points),
             'input_dim': int(dataset.shape[1]),
             'dimension': int(dataset.shape[1]),
             'knn': args.knn,
+            'max_points': args.max_points,
             'num_partitions': args.partitions,
             'partition_params': {
                 'imbalance': args.imbalance,
