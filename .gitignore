@@ -42,11 +42,13 @@ Raw_Data/
 # Generated indices
 indices/
 experiments/indices/
+test_index*/
 
 # Results and logs
 experiments/results/
 *.log
 output_*.txt
+test_output*.txt
 
 # Temporary files
 tmp_index_test/
