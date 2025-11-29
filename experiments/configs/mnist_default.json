@@ -1,0 +1,23 @@
+{
+  "dataset_type": "mnist",
+  "dataset_path": "Raw_Data/MNIST/input.idx3-ubyte",
+  "query_path": "Raw_Data/MNIST/query.idx3-ubyte",
+  "groundtruth_path": null,
+  "build_params": {
+    "knn": 10,
+    "num_partitions": 100,
+    "imbalance": 0.03,
+    "kahip_mode": 2,
+    "layers": 3,
+    "nodes": 64,
+    "epochs": 10,
+    "batch_size": 128,
+    "lr": 0.001,
+    "seed": 1
+  },
+  "search_params": {
+    "N": 10,
+    "top_bins": 5,
+    "rerank": 50
+  }
+}

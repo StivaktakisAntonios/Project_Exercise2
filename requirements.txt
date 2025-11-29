@@ -1,0 +1,15 @@
+# Neural LSH Project Dependencies
+# Python 3.10+ compatible, CPU-only execution
+
+# PyTorch (CPU-only version)
+# No CUDA dependencies - all training and inference on CPU
+torch==2.2.0
+
+# NumPy for numerical operations and array handling
+numpy>=1.24.0,<1.27.0
+
+# tqdm for progress bars during long-running operations
+tqdm>=4.65.0,<4.67.0
+
+# Note: KaHIP (kaffpa executable) must be installed separately at system level
+# This project invokes kaffpa via subprocess for graph partitioning
