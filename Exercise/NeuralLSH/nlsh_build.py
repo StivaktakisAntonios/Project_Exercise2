@@ -43,10 +43,12 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 import numpy as np
 import torch
+import os
+import subprocess
 
 from Exercise.Modules.config import DEVICE
 from Exercise.Modules.dataset_parser import load_points
-from Exercise.Modules.graph_utils import build_knn
+from Exercise.Modules.graph_utils import build_knn, load_knn_indices_bin
 from Exercise.Modules.partitioner import partition_knn_graph
 from Exercise.Modules.models import train_partition_classifier
 from Exercise.Modules.index_io import build_inverted_index, save_index
@@ -157,21 +159,61 @@ def main():
     
     # Phase 2: Build k-NN graph
     print("\n[2/5] Building k-NN graph...")
-    if args.max_points:
-        print(f"  Note: Limiting to first {args.max_points} points for efficiency")
     t_start = time.time()
+
     try:
-        knn_indices, knn_distances = build_knn(
-            dataset, args.knn, 
-            max_points=args.max_points,
-            show_progress=True
-        )
-        actual_points = knn_indices.shape[0]
-        print(f"  Built k-NN graph with k={args.knn} for {actual_points} points")
+        if args.type == "sift":
+            # Για SIFT ΔΕΝ κάνουμε Python brute-force, αλλά τρέχουμε C++ executable
+            knn_bin_path = os.path.join("Raw_Data", "SIFT", f"knn_sift_k{args.knn}.bin")
+
+            # Αν υπάρχει ήδη, δεν το ξαναυπολογίζουμε
+            if not os.path.exists(knn_bin_path):
+                print(f"  k-NN file {knn_bin_path} not found.")
+                print("  Running C++ executable 'build_knn_sift' to compute k-NN graph...")
+
+                # Βρίσκουμε το path του build_knn_sift σε σχέση με το τρέχον .py
+                script_dir = os.path.dirname(os.path.abspath(__file__))      # .../Exercise/NeuralLSH
+                exe_path = os.path.join(script_dir, "..", "build_knn_sift")  # .../Exercise/build_knn_sift
+                exe_path = os.path.normpath(exe_path)
+
+                # ΠΡΟΣΟΧΗ: εδώ βάλε το ίδιο arg που χρησιμοποιείς για το -d
+                # Αν στο argparse το έχεις ως args.d, βάλε "-d", args.d
+                cmd = [
+                    exe_path,
+                    "-d", args.dataset,          # <-- ή args.dataset_path ή όπως λέγεται στο δικό σου κώδικα
+                    "-k", str(args.knn),
+                    "-o", knn_bin_path,
+                ]
+                subprocess.run(cmd, check=True)
+
+            # Διαβάζουμε το .bin που έφτιαξε ο C++ κώδικάς σου
+            knn_indices, knn_distances = load_knn_indices_bin(knn_bin_path)
+            actual_points = knn_indices.shape[0]
+            print(
+                f"  Loaded k-NN graph from {knn_bin_path} "
+                f"for {actual_points} points, k={args.knn}"
+            )
+
+        else:
+            # Για MNIST (ή άλλα μικρά sets) συνεχίζουμε με pure NumPy brute-force
+            if args.max_points:
+                print(f"  Note: Limiting to first {args.max_points} points for efficiency")
+
+            knn_indices, knn_distances = build_knn(
+                dataset,
+                args.knn,
+                max_points=args.max_points,
+                show_progress=True,
+            )
+            actual_points = knn_indices.shape[0]
+            print(f"  Built k-NN graph with k={args.knn} for {actual_points} points")
+
         print(f"  Time: {time.time() - t_start:.2f}s")
+
     except Exception as e:
         print(f"ERROR: Failed to build k-NN graph: {e}", file=sys.stderr)
         sys.exit(1)
+
     
     # Phase 3: Partition k-NN graph with KaHIP
     print("\n[3/5] Partitioning k-NN graph with KaHIP...")
@@ -201,7 +243,9 @@ def main():
     t_start = time.time()
     try:
         # Use subset of data if max_points was specified
-        training_data = dataset[:actual_points] if args.max_points else dataset
+        training_data = dataset[:actual_points]
+
+        #training_data = dataset[:actual_points] if args.max_points else dataset
         
         model, history = train_partition_classifier(
             points=training_data,

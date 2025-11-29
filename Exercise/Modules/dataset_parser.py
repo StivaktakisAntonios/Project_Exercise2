@@ -190,4 +190,3 @@ def _load_sift_fvecs(path: str) -> np.ndarray:
     result = np.array(vectors, dtype=np.float32)
     
     return result
->>>>>>> origin/anestis

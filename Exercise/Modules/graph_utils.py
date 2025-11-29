@@ -213,6 +213,9 @@ def symmetrize_graph(
     for u in range(n):
         for j in range(k):
             v = indices[u, j]
+            # Φιλτράρουμε invalid neighbors (π.χ. -1 από C++)
+            if v < 0 or v >= n:
+                continue
             dist = distances[u, j]
             directed_edges[(u, v)] = dist
     
@@ -342,3 +345,39 @@ def build_weighted_graph(
         }
     
     return adjacency, edge_data
+
+
+import numpy as np
+
+def load_knn_indices_bin(path: str):
+    """
+    Load k-NN indices from C++ binary file produced by build_knn_sift.
+    
+    File format:
+        [int32 n][int32 k][n*k int32 ids]
+    in row-major order: for each i in [0, n), we have k neighbor IDs.
+    
+    Returns:
+        indices: shape [n, k], dtype int64
+        distances: shape [n, k], dtype float32 (dummy, all ones)
+    """
+    with open(path, "rb") as f:
+        header = np.fromfile(f, dtype=np.int32, count=2)
+        if header.size < 2:
+            raise ValueError(f"File {path} is too short or invalid.")
+        n, k = int(header[0]), int(header[1])
+        ids = np.fromfile(f, dtype=np.int32)
+
+    if ids.size != n * k:
+        raise ValueError(
+            f"File {path} is inconsistent: expected {n*k} ids, got {ids.size}."
+        )
+
+    indices = ids.reshape(n, k).astype(np.int64)
+
+    # Για KaHIP/weights χρειαζόμαστε μόνο τη δομή του γράφου (ποιοι είναι γείτονες).
+    # Οι αποστάσεις δεν επηρεάζουν τα βάρη 1/2 (mutual/non-mutual),
+    # άρα μπορούμε να βάλουμε dummy τιμές.
+    distances = np.ones((n, k), dtype=np.float32)
+
+    return indices, distances
