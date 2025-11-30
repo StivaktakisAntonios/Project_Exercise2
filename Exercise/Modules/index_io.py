@@ -6,9 +6,6 @@ Handles saving and loading of Neural LSH index components:
 - Inverted index (bins.npz): mapping from partition ID to list of point indices
 - Trained model (model.pth): PyTorch state dict
 - Metadata (meta.json): configuration and parameters
-
-Author: Neural LSH Project
-Date: 2025-11-27
 """
 
 import json
