@@ -256,16 +256,6 @@ Each line contains space-separated neighbor IDs (0-indexed) for a single query.
 - **More bins** (`-T`): Higher recall but slower search
 - **More rerank candidates** (`-R`): Better precision but more computation
 
-## Testing
-
-Run unit tests:
-
-```bash
-python Exercise/Modules/test_dataset_parser.py
-python Exercise/Modules/test_graph_utils.py
-python Exercise/Modules/test_models.py
-```
-
 ## Development Notes
 
 - **CPU-only**: Implementation uses CPU-only PyTorch (no GPU required)

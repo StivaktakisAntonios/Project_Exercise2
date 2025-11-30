@@ -250,16 +250,6 @@ tTrueAverage: 0.45678
 - **Περισσότερα bins** (`-T`): Υψηλότερο recall αλλά πιο αργή αναζήτηση
 - **max_queries**: Χρήση για γρήγορη επικύρωση κατά την ανάπτυξη
 
-## Δοκιμές
-
-Εκτέλεση unit tests:
-
-```bash
-python Exercise/Modules/test_dataset_parser.py
-python Exercise/Modules/test_graph_utils.py
-python Exercise/Modules/test_models.py
-```
-
 ## Σημειώσεις Ανάπτυξης
 
 - **Μόνο CPU**: Η υλοποίηση χρησιμοποιεί PyTorch μόνο για CPU (δεν απαιτείται GPU)
