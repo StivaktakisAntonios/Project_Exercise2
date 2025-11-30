@@ -15,14 +15,14 @@
 Implementation of Neural LSH (Locality-Sensitive Hashing) for approximate nearest neighbor search using neural network-based partitioning.
 
 The algorithm combines:
-- k-NN graph construction for dataset structure analysis
+- k-NN graph construction using IVFFlat (C++ from Assignment 1)
 - Balanced graph partitioning using KaHIP
 - Multi-layer perceptron (MLP) classifier for learning partition assignments
 - Multi-probe search strategy for efficient approximate nearest neighbor retrieval
 
 This implementation follows the specification of Assignment 2 (Κ23γ) and produces output compatible with Assignment 1 methods (LSH, Hypercube, IVFFlat, IVFPQ) for direct performance comparison.
 
-**Note on k-NN Graph Construction:** The current implementation uses brute-force Euclidean distance computation for k-NN graph construction. For optimal performance on large datasets, integration with Assignment 1's optimized nearest neighbor methods (e.g., LSH or IVF-based approximate k-NN) can be used as a preprocessing step.
+**k-NN Graph Construction:** Uses optimized C++ IVFFlat implementation from Assignment 1 for fast approximate k-NN graph construction on both MNIST and SIFT datasets. The k-NN graphs are precomputed and cached for reuse across multiple experiments.
 
 ## Project Structure
 
@@ -36,17 +36,28 @@ Project_Exercise2/
 │   │   ├── partitioner.py    # KaHIP graph partitioning
 │   │   ├── models.py         # MLP classifier training
 │   │   ├── index_io.py       # Index persistence
-│   │   └── search.py         # Query search algorithms
-│   └── NeuralLSH/           # CLI scripts
-│       ├── nlsh_build.py    # Index building script
-│       └── nlsh_search.py   # Query search script
-├── experiments/             # Experimental validation
-│   ├── run_experiments.py  # Automated experiment runner
-│   └── results/            # Experiment results
-├── Raw_Data/               # Input datasets
+│   │   ├── search.py         # Query search algorithms
+│   │   └── Models/           # C++ implementations from Assignment 1
+│   │       ├── build_knn_mnist.cpp  # MNIST k-NN builder
+│   │       ├── build_knn_sift.cpp   # SIFT k-NN builder
+│   │       ├── IVFFlat/      # IVF-Flat implementation
+│   │       ├── LSH/          # LSH implementation
+│   │       ├── Hypercube/    # Hypercube implementation
+│   │       ├── IVFPQ/        # IVF-PQ implementation
+│   │       └── Template/     # Utilities (L2, data I/O)
+│   ├── NeuralLSH/            # CLI scripts
+│   │   ├── nlsh_build.py     # Index building script
+│   │   └── nlsh_search.py    # Query search script
+│   ├── build_knn_mnist       # Compiled MNIST k-NN executable
+│   └── build_knn_sift        # Compiled SIFT k-NN executable
+├── experiments/              # Experimental validation
+│   ├── run_experiments.py    # Automated experiment runner
+│   └── results/              # Experiment results
+├── Raw_Data/                 # Input datasets
 │   ├── MNIST/
 │   └── SIFT/
-└── requirements.txt        # Python dependencies
+├── build_knn_executables.sh  # Compile k-NN executables
+└── requirements.txt          # Python dependencies
 ```
 
 ## Installation
@@ -55,6 +66,7 @@ Project_Exercise2/
 
 - Python 3.10 or higher
 - KaHIP graph partitioning tool
+- C++ compiler with C++17 support (g++ recommended)
 
 ### Setup
 
@@ -87,10 +99,21 @@ cd KaHIP
 export PATH=$PATH:$(pwd)/deploy
 ```
 
-5. Verify installation:
+5. Compile C++ k-NN graph builders:
+```bash
+./build_knn_executables.sh
+```
+
+This will compile:
+- `Exercise/build_knn_mnist` - k-NN graph builder for MNIST using IVFFlat
+- `Exercise/build_knn_sift` - k-NN graph builder for SIFT using IVFFlat
+
+6. Verify installation:
 ```bash
 which kaffpa
 python -c "import torch; print(torch.__version__)"
+./Exercise/build_knn_mnist -h
+./Exercise/build_knn_sift -h
 ```
 
 ## Usage

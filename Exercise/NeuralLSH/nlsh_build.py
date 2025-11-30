@@ -4,7 +4,7 @@ nlsh_build.py — Neural LSH Index Builder
 
 Builds Neural LSH index through the following pipeline:
 1. Load dataset
-2. Build k-NN graph (brute-force; for production, integrate Assignment 1 methods)
+2. Build k-NN graph using IVFFlat (C++ from Assignment 1)
 3. Partition k-NN graph using KaHIP (via partition_knn_graph)
 4. Train MLP classifier on partition labels
 5. Save index (model + inverted file + metadata)
@@ -162,51 +162,55 @@ def main():
     t_start = time.time()
 
     try:
+        # Χρησιμοποιούμε C++ IVFFlat-based k-NN για όλα τα datasets (SIFT και MNIST)
+        script_dir = os.path.dirname(os.path.abspath(__file__))  # .../Exercise/NeuralLSH
+        
         if args.type == "sift":
-            # Για SIFT ΔΕΝ κάνουμε Python brute-force, αλλά τρέχουμε C++ executable
+            # Για SIFT χρησιμοποιούμε build_knn_sift
             knn_bin_path = os.path.join("Raw_Data", "SIFT", f"knn_sift_k{args.knn}.bin")
+            exe_name = "build_knn_sift"
+        else:  # mnist
+            # Για MNIST χρησιμοποιούμε build_knn_mnist
+            knn_bin_path = os.path.join("Raw_Data", "MNIST", f"knn_mnist_k{args.knn}.bin")
+            exe_name = "build_knn_mnist"
 
-            # Αν υπάρχει ήδη, δεν το ξαναυπολογίζουμε
-            if not os.path.exists(knn_bin_path):
-                print(f"  k-NN file {knn_bin_path} not found.")
-                print("  Running C++ executable 'build_knn_sift' to compute k-NN graph...")
+        # Αν υπάρχει ήδη το k-NN file, δεν το ξαναυπολογίζουμε
+        if not os.path.exists(knn_bin_path):
+            print(f"  k-NN file {knn_bin_path} not found.")
+            print(f"  Running C++ executable '{exe_name}' to compute k-NN graph using IVFFlat...")
 
-                # Βρίσκουμε το path του build_knn_sift σε σχέση με το τρέχον .py
-                script_dir = os.path.dirname(os.path.abspath(__file__))      # .../Exercise/NeuralLSH
-                exe_path = os.path.join(script_dir, "..", "build_knn_sift")  # .../Exercise/build_knn_sift
-                exe_path = os.path.normpath(exe_path)
+            # Βρίσκουμε το path του executable
+            exe_path = os.path.join(script_dir, "..", exe_name)
+            exe_path = os.path.normpath(exe_path)
 
-                # ΠΡΟΣΟΧΗ: εδώ βάλε το ίδιο arg που χρησιμοποιείς για το -d
-                # Αν στο argparse το έχεις ως args.d, βάλε "-d", args.d
-                cmd = [
-                    exe_path,
-                    "-d", args.dataset,          # <-- ή args.dataset_path ή όπως λέγεται στο δικό σου κώδικα
-                    "-k", str(args.knn),
-                    "-o", knn_bin_path,
-                ]
-                subprocess.run(cmd, check=True)
+            if not os.path.exists(exe_path):
+                raise FileNotFoundError(
+                    f"C++ executable not found: {exe_path}\n"
+                    f"Please compile it first:\n"
+                    f"  cd Exercise\n"
+                    f"  g++ -O3 -std=c++17 Modules/Models/{exe_name}.cpp "
+                    f"Modules/Models/Template/data_io.cpp Modules/Models/IVFFlat/ivfflat.cpp "
+                    f"-o {exe_name}"
+                )
 
-            # Διαβάζουμε το .bin που έφτιαξε ο C++ κώδικάς σου
-            knn_indices, knn_distances = load_knn_indices_bin(knn_bin_path)
-            actual_points = knn_indices.shape[0]
-            print(
-                f"  Loaded k-NN graph from {knn_bin_path} "
-                f"for {actual_points} points, k={args.knn}"
-            )
+            # Δημιουργούμε τον κατάλογο για το output αν δεν υπάρχει
+            os.makedirs(os.path.dirname(knn_bin_path), exist_ok=True)
 
-        else:
-            # Για MNIST (ή άλλα μικρά sets) συνεχίζουμε με pure NumPy brute-force
-            if args.max_points:
-                print(f"  Note: Limiting to first {args.max_points} points for efficiency")
+            cmd = [
+                exe_path,
+                "-d", args.dataset,
+                "-k", str(args.knn),
+                "-o", knn_bin_path,
+            ]
+            subprocess.run(cmd, check=True)
 
-            knn_indices, knn_distances = build_knn(
-                dataset,
-                args.knn,
-                max_points=args.max_points,
-                show_progress=True,
-            )
-            actual_points = knn_indices.shape[0]
-            print(f"  Built k-NN graph with k={args.knn} for {actual_points} points")
+        # Διαβάζουμε το .bin που έφτιαξε ο C++ κώδικας
+        knn_indices, knn_distances = load_knn_indices_bin(knn_bin_path)
+        actual_points = knn_indices.shape[0]
+        print(
+            f"  Loaded k-NN graph from {knn_bin_path} "
+            f"for {actual_points} points, k={args.knn}"
+        )
 
         print(f"  Time: {time.time() - t_start:.2f}s")
 
