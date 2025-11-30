@@ -298,7 +298,7 @@ def write_output_file(
     results: List[Dict],
     aggregate_metrics: Dict,
     output_path: str,
-    N: int
+    N: int, range_search: bool = True,
 ):
     """
     Write search results to output file in Assignment 1 format.
@@ -340,6 +340,7 @@ def write_output_file(
             r_near_indices = result['r_near_indices']
             
             # Query header
+            f.write(f"\n")
             f.write("Neural LSH\n")
             f.write(f"Query: {query_id}\n")
             
@@ -357,11 +358,29 @@ def write_output_file(
                 f.write(f"Nearest neighbor-{i+1}: {neighbor_idx}\n")
                 f.write(f"distanceApproximate: {dist_approx}\n")
                 f.write(f"distanceTrue: {dist_true}\n")
+                f.write(f"\n")
             
-            # R-near neighbors section
-            f.write("R-near neighbors:\n")
-            for idx in r_near_indices:
-                f.write(f"{idx}\n")
+#            # Write N neighbors
+#            for i in range(min(N, len(approx_indices))):
+#                neighbor_idx = approx_indices[i]
+#                dist_approx = approx_distances[i]
+#                
+#                # Get corresponding true distance for this position
+#                if i < len(true_distances):
+#                    dist_true = true_distances[i]
+#                else:
+#                    dist_true = dist_approx  # Fallback
+#                
+#                f.write(f"Nearest neighbor-{i+1}: {neighbor_idx}\n")
+#                f.write(f"distanceApproximate: {dist_approx}\n")
+#                f.write(f"distanceTrue: {dist_true}\n")
+            
+            # R-near neighbors section (μόνο αν range_search == True)
+            if range_search:
+                f.write("R-near neighbors:\n")
+                for idx in r_near_indices:
+                    f.write(f"{idx}\n")
+
         
         # Write aggregate metrics
         f.write(f"Average AF: {aggregate_metrics['average_af']}\n")

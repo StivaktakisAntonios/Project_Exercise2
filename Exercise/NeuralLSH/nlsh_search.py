@@ -196,7 +196,8 @@ def main():
             results=results,
             aggregate_metrics=aggregate_metrics,
             output_path=args.output,
-            N=args.neighbors
+            N=args.neighbors,
+            range_search=range_search #extra gia R-neigbours tipoma
         )
         print(f"  Output written to: {args.output}")
         print(f"  Time: {time.time() - t_start:.2f}s")
