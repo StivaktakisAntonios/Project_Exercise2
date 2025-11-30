@@ -48,14 +48,6 @@ int main(int argc, char** argv) {
 
     try {
         // 1. Φόρτωση SIFT από 1ης εργασίας
-        //std::vector<double> data_vec;
-        //std::size_t n = 0, dim = 0;
-        //load_sift_fvecs(data_path, data_vec, n, dim);
-        //const double* data = data_vec.data();
-//
-        //std::cerr << "Loaded SIFT dataset: n=" << n
-        //          << ", dim=" << dim << std::endl;
-
         std::vector<double> data_vec;
         std::size_t n = 0, dim = 0;
         load_sift_fvecs(data_path, data_vec, n, dim);
@@ -79,7 +71,7 @@ int main(int argc, char** argv) {
         }
 
 
-        // 2. Params για IVFFlat (μπορείς να τα ρυθμίσεις όπως στην 1η εργασία)
+        // 2. Params για IVFFlat
         IVFFlat::Params P;
         P.dim       = dim;
         P.kclusters = 1024; //4096;     // π.χ. 4096 κέντρα
@@ -100,39 +92,6 @@ int main(int argc, char** argv) {
         std::vector<std::int32_t> all_ids;
         all_ids.resize(n_used * static_cast<std::size_t>(k));
 
-
-        //for (std::size_t i = 0; i < n; ++i) {
-        //    const double* q = data + i * dim;
-//
-        //    // ζητάμε k+1 για να πετάξουμε τον εαυτό του αν εμφανιστεί
-        //    auto res = index.query_top(q, static_cast<std::size_t>(k) + 1);
-//
-        //    std::vector<std::int32_t> neigh;
-        //    neigh.reserve(k);
-        //    for (const auto& pr : res) {
-        //        int id = pr.first;
-        //        if (id == static_cast<int>(i)) continue; // πέτα τον εαυτό του
-        //        neigh.push_back(id);
-        //        if ((int)neigh.size() == k) break;
-        //    }
-//
-        //    // αν δεν βρήκαμε αρκετούς, συμπληρώνουμε με -1
-        //    while ((int)neigh.size() < k) {
-        //        neigh.push_back(-1);
-        //    }
-//
-        //    for (int j = 0; j < k; ++j) {
-        //        all_ids[i * static_cast<std::size_t>(k) + static_cast<std::size_t>(j)]
-        //            = neigh[static_cast<std::size_t>(j)];
-        //    }
-//
-        //    if ((i + 1) % 1000 == 0) {
-        //        std::cerr << "\rComputed kNN for "
-        //                  << (i + 1) << "/" << n << " points..." << std::flush;
-        //    }
-        //}
-        //std::cerr << "\nFinished computing kNN." << std::endl;
-        
         std::cerr << "Computing kNN for " << n_used << " points..." << std::endl;
 
         for (std::size_t i = 0; i < n_used; ++i) {
@@ -176,7 +135,7 @@ int main(int argc, char** argv) {
 
         //std::int32_t n32 = static_cast<std::int32_t>(n);
         //std::int32_t k32 = static_cast<std::int32_t>(k);
-//
+
         //out.write(reinterpret_cast<const char*>(&n32), sizeof(n32));
         //out.write(reinterpret_cast<const char*>(&k32), sizeof(k32));
         //out.write(

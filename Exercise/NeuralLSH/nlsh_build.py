@@ -28,9 +28,6 @@ Optional Arguments:
     --batch_size    Training batch size (default: 128)
     --lr            Learning rate (default: 0.001)
     --seed          Random seed (default: 1)
-
-Author: Neural LSH Project
-Date: 2025-11-28
 """
 
 import argparse

@@ -31,9 +31,6 @@ Optional Arguments:
     -R              Radius for R-near neighbors (default: 2000 for MNIST, 2800 for SIFT)
     -T              Number of top bins to probe (default: 5)
     -range          Compute R-near neighbors: true or false (default: true)
-
-Author: Neural LSH Project
-Date: 2025-11-28
 """
 
 import argparse

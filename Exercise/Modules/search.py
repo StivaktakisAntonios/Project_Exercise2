@@ -360,21 +360,6 @@ def write_output_file(
                 f.write(f"distanceTrue: {dist_true}\n")
                 f.write(f"\n")
             
-#            # Write N neighbors
-#            for i in range(min(N, len(approx_indices))):
-#                neighbor_idx = approx_indices[i]
-#                dist_approx = approx_distances[i]
-#                
-#                # Get corresponding true distance for this position
-#                if i < len(true_distances):
-#                    dist_true = true_distances[i]
-#                else:
-#                    dist_true = dist_approx  # Fallback
-#                
-#                f.write(f"Nearest neighbor-{i+1}: {neighbor_idx}\n")
-#                f.write(f"distanceApproximate: {dist_approx}\n")
-#                f.write(f"distanceTrue: {dist_true}\n")
-            
             # R-near neighbors section (μόνο αν range_search == True)
             if range_search:
                 f.write("R-near neighbors:\n")
