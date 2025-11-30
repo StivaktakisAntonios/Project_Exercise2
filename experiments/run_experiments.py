@@ -74,29 +74,35 @@ def run_build(config, dataset_type, dataset_path, index_path):
     return build_time
 
 
-def run_search(config, dataset_type, query_path, index_path, output_path):
+def run_search(config, dataset_type, dataset_path, query_path, index_path, output_path):
     """
     Run Neural LSH query search.
     
     Args:
         config: Configuration dict with search parameters
         dataset_type: 'mnist' or 'sift'
+        dataset_path: Path to dataset file
         query_path: Path to query dataset
         index_path: Path to index
         output_path: Path to output file
     
     Returns:
-        Dict with metrics (query_time, qps, etc.)
+        Dict with metrics (recall, af, qps, etc.)
     """
+    # Set default radius based on dataset type
+    default_radius = 2000.0 if dataset_type == 'mnist' else 2800.0
+    
     cmd = [
         'python', 'Exercise/NeuralLSH/nlsh_search.py',
+        '-d', dataset_path,
         '-q', query_path,
         '-i', index_path,
         '-o', output_path,
         '-type', dataset_type,
         '-N', str(config.get('N', 10)),
         '-T', str(config.get('top_bins', 5)),
-        '-R', str(config.get('rerank', 50))
+        '-R', str(config.get('radius', default_radius)),
+        '-range', 'false'
     ]
     
     print(f"\n{'='*60}")
@@ -111,93 +117,42 @@ def run_search(config, dataset_type, query_path, index_path, output_path):
     if result.returncode != 0:
         raise RuntimeError(f"Search failed with code {result.returncode}\n{result.stderr}")
     
-    # Parse metrics from output
+    # Parse metrics from output file (aggregate metrics at end)
     metrics = {
         'total_time': search_time,
-        'output': result.stdout
+        'recall': None,
+        'average_af': None,
+        'qps': None,
+        't_approximate': None,
+        't_true': None
     }
     
-    # Extract metrics from stdout if available
-    for line in result.stdout.split('\n'):
-        if 'queries' in line.lower():
-            parts = line.split()
-            for i, part in enumerate(parts):
-                if part.isdigit():
-                    metrics['num_queries'] = int(part)
-        if 'qps' in line.lower() or 'throughput' in line.lower():
-            parts = line.split()
-            for part in parts:
-                try:
-                    metrics['qps'] = float(part)
-                    break
-                except ValueError:
-                    continue
+    try:
+        with open(output_path, 'r') as f:
+            lines = f.readlines()
+        
+        # Parse aggregate metrics from end of file
+        for line in lines:
+            line = line.strip()
+            if line.startswith('Average AF:'):
+                metrics['average_af'] = float(line.split(':')[1].strip())
+            elif line.startswith('Recall@N:'):
+                metrics['recall'] = float(line.split(':')[1].strip())
+            elif line.startswith('QPS:'):
+                metrics['qps'] = float(line.split(':')[1].strip())
+            elif line.startswith('tApproximateAverage:'):
+                metrics['t_approximate'] = float(line.split(':')[1].strip())
+            elif line.startswith('tTrueAverage:'):
+                metrics['t_true'] = float(line.split(':')[1].strip())
+    except Exception as e:
+        print(f"Warning: Could not parse metrics from output file: {e}")
     
     print(f"\n✓ Search completed in {search_time:.2f}s")
+    if metrics['recall'] is not None:
+        print(f"  Recall@N: {metrics['recall']:.4f}")
+        print(f"  Average AF: {metrics['average_af']:.4f}")
+        print(f"  QPS: {metrics['qps']:.2f}")
     return metrics
-
-
-def calculate_recall(output_file, groundtruth_file, N=10):
-    """
-    Calculate recall@N by comparing output with groundtruth.
-    
-    Args:
-        output_file: Path to search output file
-        groundtruth_file: Path to groundtruth file (.ivecs for SIFT)
-        N: Number of neighbors to consider
-    
-    Returns:
-        Average recall@N across all queries
-    """
-    # Read output file
-    with open(output_file, 'r') as f:
-        lines = f.readlines()
-    
-    # Parse search results
-    results = []
-    for line in lines:
-        if line.strip() and not line.startswith('Query'):
-            parts = line.strip().split()
-            if parts:
-                neighbor_ids = [int(x) for x in parts]
-                results.append(neighbor_ids[:N])
-    
-    # For SIFT, read groundtruth from .ivecs
-    if groundtruth_file.endswith('.ivecs'):
-        groundtruth = read_ivecs(groundtruth_file)
-    else:
-        # For MNIST, we'd need to compute true k-NN
-        print("Warning: Groundtruth computation for MNIST not implemented")
-        return None
-    
-    # Calculate recall
-    recalls = []
-    for i, pred in enumerate(results):
-        if i >= len(groundtruth):
-            break
-        true_nn = set(groundtruth[i][:N])
-        pred_nn = set(pred[:N])
-        recall = len(true_nn & pred_nn) / N
-        recalls.append(recall)
-    
-    avg_recall = np.mean(recalls) if recalls else 0.0
-    return avg_recall
-
-
-def read_ivecs(filename):
-    """Read .ivecs file (SIFT groundtruth format)."""
-    with open(filename, 'rb') as f:
-        data = []
-        while True:
-            # Read dimension
-            d_bytes = f.read(4)
-            if not d_bytes:
-                break
-            d = int(np.frombuffer(d_bytes, dtype=np.int32)[0])
-            # Read vector
-            vec = np.frombuffer(f.read(d * 4), dtype=np.int32)
-            data.append(vec)
-        return np.array(data)
 
 
 def run_experiment(experiment_config, results_dir):
@@ -236,24 +191,11 @@ def run_experiment(experiment_config, results_dir):
     search_metrics = run_search(
         experiment_config['search_params'],
         dataset_type,
+        dataset_path,
         query_path,
         index_path,
         output_path
     )
-    
-    # Calculate recall if groundtruth available
-    recall = None
-    if groundtruth_path:
-        try:
-            recall = calculate_recall(
-                output_path,
-                groundtruth_path,
-                N=experiment_config['search_params'].get('N', 10)
-            )
-            if recall is not None:
-                print(f"\n✓ Recall@{experiment_config['search_params']['N']}: {recall:.4f}")
-        except Exception as e:
-            print(f"Warning: Could not calculate recall: {e}")
     
     # Compile results
     results = {
@@ -264,8 +206,12 @@ def run_experiment(experiment_config, results_dir):
         'build_params': experiment_config['build_params'],
         'search_params': experiment_config['search_params'],
         'build_time': build_time,
-        'search_metrics': search_metrics,
-        'recall': recall,
+        'recall': search_metrics.get('recall'),
+        'average_af': search_metrics.get('average_af'),
+        'qps': search_metrics.get('qps'),
+        't_approximate': search_metrics.get('t_approximate'),
+        't_true': search_metrics.get('t_true'),
+        'total_search_time': search_metrics.get('total_time'),
         'index_path': index_path,
         'output_path': output_path
     }
