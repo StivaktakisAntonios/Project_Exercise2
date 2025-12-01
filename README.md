@@ -1,12 +1,12 @@
 # Neural LSH - Approximate Nearest Neighbor Search
 
-**Project:** Κ23γ – 2η Προγραμματιστική Εργασία  
-**Course:** Ανάπτυξη Λογισμικού για Αλγοριθμικά Προβλήματα  
-**Semester:** Χειμερινό εξάμηνο 2025-26
+**Project:** Κ23γ – 2nd Programming Task
+**Course:** Software Development for Algorithmic Problems
+**Semester:** Winter semester 2025-26
 
 **Team 15:**  
-- **Ανέστης Θεοδωρίδης** – ΑΜ: 1115201500212 – Email: sdi1500212@di.uoa.gr
-- **Αντώνιος-Ραφαήλ Στιβακτάκης** – ΑΜ: 1115202200258 – Email: sdi2200258@di.uoa.gr
+- **Anestis Theodoridis** – ΑΜ: 1115201500212 – Email: sdi1500212@di.uoa.gr
+- **Antonios-Rafail Stivaktakis** – ΑΜ: 1115202200258 – Email: sdi2200258@di.uoa.gr
 
 ---
 
