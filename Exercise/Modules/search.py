@@ -341,7 +341,6 @@ def write_output_file(
             
             # Query header
             f.write(f"\n")
-            f.write("Neural LSH\n")
             f.write(f"Query: {query_id}\n")
             
             # Write N neighbors
