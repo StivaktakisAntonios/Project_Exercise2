@@ -155,25 +155,29 @@ Search for nearest neighbors using a built index:
 
 ```bash
 python Exercise/NeuralLSH/nlsh_search.py \
+    -d Raw_Data/MNIST/input.idx3-ubyte \
     -q Raw_Data/MNIST/query.idx3-ubyte \
     -i indices/mnist_index \
-    -o results/mnist_output.txt \
+    -o outputs/mnist_output.txt \
     -type mnist \
-    -N 10 \
+    -N 1 \
     -T 5 \
-    -R 50
+    -range false
 ```
 
 **Required Arguments:**
+- `-d, --dataset`: Path to dataset file (base vectors)
 - `-q, --query`: Path to query dataset file
 - `-i, --index`: Path to index directory
 - `-o, --output`: Path to output results file
 - `-type`: Dataset type (`mnist` or `sift`)
 
 **Optional Arguments:**
-- `-N`: Number of nearest neighbors to return (default: 10)
+- `-N, --neighbors`: Number of nearest neighbors to return (default: 1)
 - `-T, --top_bins`: Number of top bins to probe (default: 5)
-- `-R, --rerank`: Number of candidates to rerank (default: 50)
+- `-R, --radius`: Radius for R-near neighbors search (default: 2000 for MNIST, 2800 for SIFT)
+- `-range, --range_search`: Enable R-near neighbors: "true" or "false" (default: true)
+- `--max_queries`: Limit number of queries processed (useful for large datasets like SIFT)
 
 ### Running Experiments
 
@@ -234,15 +238,47 @@ EPSILON = 1e-10         # Numerical stability constant
 
 ## Output Format
 
-Search results are written in the format:
+Search results are written in Assignment 1 compatible format:
 
 ```
-Query_0: neighbor_1 neighbor_2 ... neighbor_N
-Query_1: neighbor_1 neighbor_2 ... neighbor_N
+METHOD NAME: Neural LSH
+
+Query: 0
+Nearest neighbor-1: 12345
+distanceApproximate: 123.45
+distanceTrue: 123.45
+
+Query: 1
+Nearest neighbor-1: 67890
+distanceApproximate: 234.56
+distanceTrue: 234.56
 ...
+
+Average AF: 1.0015
+Recall@1: 0.9765
+QPS: 117.63
+tApproximateAverage: 0.008501
+tTrueAverage: 0.077093
 ```
 
-Each line contains space-separated neighbor IDs (0-indexed) for a single query.
+Each query includes approximate and true distances, followed by aggregate metrics.
+
+## Experimental Results
+
+Pre-computed experimental results are available in `outputs/`:
+- `mnist_fast_N1_T5.txt` - MNIST with KaHIP FAST mode
+- `mnist_eco_N1_T5.txt` - MNIST with KaHIP ECO mode
+- `sift_fast_N1_T5.txt` - SIFT (100 queries) with KaHIP FAST mode
+- `sift_eco_N1_T5.txt` - SIFT (100 queries) with KaHIP ECO mode
+- `results_summary.txt` - Comprehensive comparison and analysis
+
+**Key Results:**
+- MNIST ECO: 97.65% recall@1, 1.0015 AF, 117.63 QPS
+- MNIST FAST: 96.62% recall@1, 1.0021 AF, 113.86 QPS
+- SIFT ECO: 95.00% recall@1, 1.0011 AF (1M points, ECO mode critical)
+- SIFT FAST: 86.00% recall@1, 1.0251 AF (1M points)
+
+ECO mode shows +9% recall improvement for large-scale datasets (SIFT 1M).
 
 ## Performance Tuning
 
@@ -254,7 +290,8 @@ Each line contains space-separated neighbor IDs (0-indexed) for a single query.
 
 ### Query Search
 - **More bins** (`-T`): Higher recall but slower search
-- **More rerank candidates** (`-R`): Better precision but more computation
+- **Smaller radius** (`-R`): Stricter R-near neighbors filtering (when range=true)
+- **Limit queries** (`--max_queries`): Faster evaluation for large datasets like SIFT
 
 ## Development Notes
 

@@ -159,11 +159,11 @@ python Exercise/NeuralLSH/nlsh_search.py \
     -d Raw_Data/MNIST/input.idx3-ubyte \
     -q Raw_Data/MNIST/query.idx3-ubyte \
     -i indices/mnist_index \
-    -o results/mnist_output.txt \
+    -o outputs/mnist_output.txt \
     -type mnist \
-    -N 10 \
+    -N 1 \
     -T 5 \
-    -R 2000
+    -range false
 ```
 
 **Υποχρεωτικές Παράμετροι:**
@@ -178,6 +178,7 @@ python Exercise/NeuralLSH/nlsh_search.py \
 - `-R`: Ακτίνα για R-near neighbors (προεπιλογή: 2000 για MNIST, 2800 για SIFT)
 - `-T, --top_bins`: Αριθμός κορυφαίων bins προς έλεγχο (προεπιλογή: 5)
 - `-range`: Υπολογισμός R-near neighbors: true ή false (προεπιλογή: true)
+- `--max_queries`: Περιορισμός αριθμού ερωτημάτων (χρήσιμο για μεγάλα datasets όπως SIFT)
 - `--max_queries`: Περιορισμός αριθμού ερωτημάτων (προεπιλογή: όλα). Χρήση για γρήγορες δοκιμές
 
 ### Εκτέλεση Πειραμάτων
@@ -239,30 +240,47 @@ EPSILON = 1e-10         # Σταθερά αριθμητικής σταθερότ
 
 ## Μορφή Εξόδου
 
-Τα αποτελέσματα αναζήτησης γράφονται στη μορφή:
+Τα αποτελέσματα αναζήτησης γράφονται σε μορφή συμβατή με την 1η Εργασία:
 
 ```
 METHOD NAME: Neural LSH
-Neural LSH
+
 Query: 0
-Nearest neighbor-1: 123
-distanceApproximate: 45.67
-distanceTrue: 45.23
+Nearest neighbor-1: 12345
+distanceApproximate: 123.45
+distanceTrue: 123.45
+
+Query: 1
+Nearest neighbor-1: 67890
+distanceApproximate: 234.56
+distanceTrue: 234.56
 ...
-Nearest neighbor-N: 456
-distanceApproximate: 67.89
-distanceTrue: 67.45
-R-near neighbors:
-789
-...
-Average AF: 1.0234
-Recall@N: 0.9567
-QPS: 123.45
-tApproximateAverage: 0.00123
-tTrueAverage: 0.45678
+
+Average AF: 1.0015
+Recall@1: 0.9765
+QPS: 117.63
+tApproximateAverage: 0.008501
+tTrueAverage: 0.077093
 ```
 
-Κάθε γραμμή περιέχει IDs γειτόνων χωρισμένα με κενά (0-indexed) για ένα μεμονωμένο ερώτημα.
+Κάθε ερώτημα περιλαμβάνει προσεγγιστικές και πραγματικές αποστάσεις, ακολουθούμενες από συγκεντρωτικές μετρικές.
+
+## Πειραματικά Αποτελέσματα
+
+Προϋπολογισμένα πειραματικά αποτελέσματα διαθέσιμα στο `outputs/`:
+- `mnist_fast_N1_T5.txt` - MNIST με KaHIP FAST mode
+- `mnist_eco_N1_T5.txt` - MNIST με KaHIP ECO mode
+- `sift_fast_N1_T5.txt` - SIFT (100 ερωτήματα) με KaHIP FAST mode
+- `sift_eco_N1_T5.txt` - SIFT (100 ερωτήματα) με KaHIP ECO mode
+- `results_summary.txt` - Ολοκληρωμένη σύγκριση και ανάλυση
+
+**Κύρια Αποτελέσματα:**
+- MNIST ECO: 97.65% recall@1, 1.0015 AF, 117.63 QPS
+- MNIST FAST: 96.62% recall@1, 1.0021 AF, 113.86 QPS
+- SIFT ECO: 95.00% recall@1, 1.0011 AF (1M σημεία, ECO mode κρίσιμο)
+- SIFT FAST: 86.00% recall@1, 1.0251 AF (1M σημεία)
+
+Το ECO mode δείχνει +9% βελτίωση recall για μεγάλης κλίμακας datasets (SIFT 1M).
 
 ## Βελτιστοποίηση Απόδοσης
 
