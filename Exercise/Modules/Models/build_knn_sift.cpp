@@ -56,8 +56,9 @@ int main(int argc, char** argv) {
         std::cerr << "Loaded SIFT dataset: n=" << n
                   << ", dim=" << dim << std::endl;
 
-        // Χρησιμοποιούμε μόνο τα πρώτα 200000 σημεία για τον k-NN γράφο
-        std::size_t n_used = std::min<std::size_t>(n, 200000);
+        // Χρησιμοποιούμε μέχρι τα πρώτα 1000000 σημεία για τον k-NN γράφο
+        // (Αν το dataset έχει λιγότερα, χρησιμοποιούνται όλα)
+        std::size_t n_used = std::min<std::size_t>(n, (std::size_t)1000000);
         std::cerr << "Using only first " << n_used
                   << " points to build k-NN graph." << std::endl;
 
