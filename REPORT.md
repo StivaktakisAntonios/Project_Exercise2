@@ -1,8 +1,7 @@
 # Neural LSH - Experimental Report
 ## Κ23γ: Assignment 2 - Hyperparameter Tuning & Comparative Study
 
-**Authors:** Stivaktak Antonios, Theodosiadis Anestis  
-**Date:** December 1, 2025  
+**Authors:** Theodoridis Anestis, Stivaktakis Antonios-Rafail  
 **Dataset:** MNIST (60k×784), SIFT (1M×128)
 
 ---
