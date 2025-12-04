@@ -70,7 +70,7 @@ def run_build(config, dataset_type, dataset_path, index_path):
     if result.returncode != 0:
         raise RuntimeError(f"Index building failed with code {result.returncode}")
     
-    print(f"\n✓ Index built in {build_time:.2f}s")
+    print(f"\nIndex built in {build_time:.2f}s")
     return build_time
 
 
@@ -147,7 +147,7 @@ def run_search(config, dataset_type, dataset_path, query_path, index_path, outpu
     except Exception as e:
         print(f"Warning: Could not parse metrics from output file: {e}")
     
-    print(f"\n✓ Search completed in {search_time:.2f}s")
+    print(f"\nSearch completed in {search_time:.2f}s")
     if metrics['recall'] is not None:
         print(f"  Recall@N: {metrics['recall']:.4f}")
         print(f"  Average AF: {metrics['average_af']:.4f}")
@@ -362,7 +362,7 @@ def main():
             with open(result_file, 'w') as f:
                 json.dump(results, f, indent=2)
             
-            print(f"\n✓ Results saved to {result_file}")
+            print(f"\nResults saved to {result_file}")
             
         except Exception as e:
             print(f"\n✗ Experiment failed: {e}")

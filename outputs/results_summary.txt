@@ -75,10 +75,10 @@ Partitioning: ~20 minutes (ECO mode)
 ---------------------------------
 Metric          FAST        ECO         Δ (ECO vs FAST)
 --------        ----        ---         ---------------
-Recall@1        96.62%      97.65%      +1.03% ✓
-Average AF      1.0021      1.0015      -0.0006 ✓
-QPS             113.86      117.63      +3.77 ✓
-MLP Val Acc     76.72%      80.82%      +4.10% ✓
+Recall@1        96.62%      97.65%      +1.03%
+Average AF      1.0021      1.0015      -0.0006
+QPS             113.86      117.63      +3.77
+MLP Val Acc     76.72%      80.82%      +4.10%
 Partition Time  6s          21s         +15s
 
 Key Findings (MNIST):
@@ -92,8 +92,8 @@ Key Findings (MNIST):
 ---------------------------------
 Metric          FAST        ECO         Δ (ECO vs FAST)
 --------        ----        ---         ---------------
-Recall@1        86.00%      95.00%      +9.00% ✓✓
-Average AF      1.0251      1.0011      -0.024 ✓✓
+Recall@1        86.00%      95.00%      +9.00%
+Average AF      1.0251      1.0011      -0.024
 QPS             36.63       36.24       -0.39 (~same)
 Build Time      25 min      40 min      +15 min
 

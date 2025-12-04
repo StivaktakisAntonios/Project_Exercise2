@@ -109,7 +109,7 @@ QPS = 600 / T^0.85              (empirical fit)
 
 **Architecture Details:**
 - 2 layers: 784 → 128 → 128 → 100
-- 3 layers: 784 → 128 → 128 → 128 → 100 ✓
+- 3 layers: 784 → 128 → 128 → 128 → 100
 - 4 layers: 784 → 128 → 128 → 128 → 128 → 100
 
 **Conclusion:** **3 layers selected** - provides best generalization without overfitting.
@@ -230,7 +230,7 @@ Based on systematic hyperparameter tuning:
                    │
     100% ─────────┼─────── IVFFlat (99.01%, 155 QPS)
                    │
-     98% ─────────●─────── Neural LSH (98.30%, 109 QPS) ✓
+     98% ─────────●─────── Neural LSH (98.30%, 109 QPS)
                    │
      83% ─────────┼─────── LSH Quality (82.94%, 47 QPS)
                    │
@@ -295,24 +295,24 @@ Based on systematic hyperparameter tuning:
 ### 6.3 Comparison with Traditional Methods
 
 **vs LSH:**
-- ✓ Higher recall (98.30% vs 82.94% on MNIST)
-- ✓ Much faster on SIFT (36 vs 2.28 QPS)
-- ✗ Longer build time
+- Higher recall (98.30% vs 82.94% on MNIST)
+- Much faster on SIFT (36 vs 2.28 QPS)
+- Longer build time
 
 **vs IVFFlat:**
-- ≈ Similar recall (98.30% vs 99.01% on MNIST)
-- ≈ Similar speed (109 vs 155 QPS)
-- ✓ Learned partitioning (no manual tuning of nlist/nprobe)
-- ✗ More complex build process
+- Similar recall (98.30% vs 99.01% on MNIST)
+- Similar speed (109 vs 155 QPS)
+- Learned partitioning (no manual tuning of nlist/nprobe)
+- More complex build process
 
 **vs IVFPQ:**
-- ✓ Much higher recall (98.30% vs 47.14%)
-- ✗ Slower speed (109 vs 3267 QPS)
+- Much higher recall (98.30% vs 47.14%)
+- Slower speed (109 vs 3267 QPS)
 - Use case: IVFPQ for massive-scale with lower recall requirements
 
 **vs Hypercube:**
-- ✓ Actually works (98.30% vs 1.53% recall)
-- ✗ Slower (109 vs 39849 QPS)
+- Actually works (98.30% vs 1.53% recall)
+- Slower (109 vs 39849 QPS)
 - Note: Hypercube severely underperforming in Assignment 1 results
 
 ---
@@ -408,7 +408,7 @@ Neural LSH achieves:
 | Config | m   | T  | nodes | layers | Recall@1 | AF     | QPS    |
 |--------|-----|----|-------|--------|----------|--------|--------|
 | A      | 50  | 5  | 128   | 3      | 99.30%   | 1.0006 | 61.41  |
-| B      | 100 | 5  | 128   | 3      | 98.30%   | 1.0014 | 108.98 | ✓ Optimal
+| B      | 100 | 5  | 128   | 3      | 98.30%   | 1.0014 | 108.98 | Optimal
 | C      | 150 | 5  | 128   | 3      | 96.20%   | 1.0021 | 139.35 |
 | D      | 100 | 1  | 128   | 3      | 70.50%   | 1.0354 | 600.15 |
 | E      | 100 | 3  | 128   | 3      | 94.40%   | 1.0037 | 153.62 |

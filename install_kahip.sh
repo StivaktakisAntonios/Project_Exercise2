@@ -9,7 +9,7 @@ echo "========================================="
 
 # Check if kaffpa already exists
 if command -v kaffpa &> /dev/null; then
-    echo "✓ KaHIP is already installed!"
+    echo "KaHIP is already installed!"
     kaffpa --help | head -5
     exit 0
 fi
@@ -56,7 +56,7 @@ echo "========================================="
 echo "Installation Complete!"
 echo "========================================="
 if command -v kaffpa &> /dev/null; then
-    echo "✓ kaffpa is now available"
+    echo "kaffpa is now available"
     kaffpa --help | head -5
     echo ""
     echo "Note: Restart your terminal or run:"
