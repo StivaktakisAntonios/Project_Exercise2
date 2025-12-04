@@ -84,7 +84,7 @@ Examples:
     parser.add_argument('-N', '--neighbors', type=int, default=1,
                         help='Number of nearest neighbors (default: 1)')
     parser.add_argument('-R', '--radius', type=float, default=None,
-                        help='Radius for R-near neighbors (default: 2000 for MNIST, 2800 for SIFT)')
+                        help='Radius for R-near neighbors search (default: 2000 for MNIST, 2800 for SIFT)')
     parser.add_argument('-T', '--top_bins', type=int, default=5,
                         help='Number of top bins to probe (default: 5)')
     parser.add_argument('-range', '--range_search', type=str, default='true',

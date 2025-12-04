@@ -123,8 +123,8 @@ def _load_mnist_idx(path: str) -> np.ndarray:
         images = data.reshape(n_images, n_rows, n_cols)
         vectors = images.reshape(n_images, n_rows * n_cols)
         
-        # Convert to float32 and normalize to [0, 1]
-        vectors = vectors.astype(np.float32) / 255.0
+        # Convert to float32
+        vectors = vectors.astype(np.float32)
     
     return vectors
 
