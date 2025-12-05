@@ -362,15 +362,6 @@ Neural LSH achieves:
 - Dataset >10M points
 - Lower recall acceptable (80-90%)
 
-### 7.4 Future Work
-
-1. **GPU Acceleration**: Move MLP inference and distance computations to GPU
-2. **Dynamic Partitioning**: Online index updates without full rebuild
-3. **Hybrid Approaches**: Combine Neural LSH with IVFPQ for compression
-4. **k-NN Graph Optimization**: Faster approximate graph construction methods
-5. **Alternative Classifiers**: Test attention mechanisms, graph neural networks
-6. **Larger Datasets**: Evaluate on 10M+ point datasets
-
 ---
 
 ## 8. References
