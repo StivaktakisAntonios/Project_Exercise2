@@ -12,8 +12,8 @@ CRITICAL: This is a CPU-only project. No CUDA operations are permitted.
 # ============================================================================
 
 # Force CPU-only execution throughout the project
-# This device constant MUST be used for all PyTorch operations
-# Do NOT use torch.cuda.is_available() or any GPU detection logic
+# This device constant is used for all PyTorch operations
+# The project is designed for CPU-only execution without GPU support
 DEVICE = "cpu"
 
 # ============================================================================
