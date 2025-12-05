@@ -34,12 +34,6 @@ def _load_mnist_idx(path: str) -> np.ndarray:
     - Number of rows: 28 (4 bytes, big-endian int32)
     - Number of columns: 28 (4 bytes, big-endian int32)
     - Image data: n × 28 × 28 unsigned bytes
-    
-    Args:
-        path: Path to idx3-ubyte file
-    
-    Returns:
-        numpy.ndarray: Flattened images with shape [n, 784]
     """
     if not os.path.exists(path):
         raise FileNotFoundError(f"MNIST file not found: {path}")
@@ -89,12 +83,6 @@ def _load_sift_fvecs(path: str) -> np.ndarray:
         - Dimension: d (4 bytes, little-endian int32)
         - Components: d float32 values (little-endian)
     - All vectors have the same dimension
-    
-    Args:
-        path: Path to fvecs file
-    
-    Returns:
-        numpy.ndarray: Vectors with shape [n, d]
     """
     if not os.path.exists(path):
         raise FileNotFoundError(f"SIFT file not found: {path}")

@@ -81,22 +81,7 @@ def save_index(
 
 
 def load_index(index_path: str) -> Tuple[Dict[int, np.ndarray], MLPClassifier, Dict[str, Any]]:
-    """
-    Load Neural LSH index from disk.
-    
-    Args:
-        index_path: Directory path containing index files
-        
-    Returns:
-        Tuple of (bins, model, metadata):
-            - bins: Dictionary mapping partition_id -> array of point indices
-            - model: Loaded MLPClassifier instance
-            - metadata: Configuration dictionary
-            
-    Raises:
-        FileNotFoundError: If index files are missing
-        ValueError: If index structure is invalid
-    """
+    """Load Neural LSH index from disk."""
     index_path = Path(index_path)
     
     if not index_path.exists():
@@ -163,21 +148,7 @@ def validate_index(
     metadata: Dict[str, Any],
     dataset_size: int = None
 ) -> bool:
-    """
-    Validate loaded index structure and consistency.
-    
-    Args:
-        bins: Inverted index dictionary
-        model: Loaded model
-        metadata: Metadata dictionary
-        dataset_size: Expected dataset size (optional)
-        
-    Returns:
-        True if validation passes
-        
-    Raises:
-        ValueError: If validation fails
-    """
+    """Validate loaded index structure and consistency."""
     # Check bin structure
     num_partitions = metadata['num_partitions']
     if len(bins) != num_partitions:

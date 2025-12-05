@@ -51,7 +51,7 @@ Project_Exercise2/
 │   ├── build_knn_mnist       # Compiled MNIST k-NN executable
 │   └── build_knn_sift        # Compiled SIFT k-NN executable
 ├── experiments/              # Experimental validation
-│   ├── run_experiments.py    # Automated experiment runner
+│   ├── run_experiments.py    # Batch experiment runner
 │   └── results/              # Experiment results
 ├── Raw_Data/                 # Input datasets
 │   ├── MNIST/

@@ -368,7 +368,7 @@ Neural LSH achieves:
 
 1. Assignment 2 Specification - Κ23γ (Winter 2025-26)
 2. KaHIP: Karlsruhe High Quality Partitioning
-3. PyTorch: Neural Network Framework
+3. PyTorch: Neural Network Library
 4. IVFFlat: Inverted File with Flat Quantization
 5. Assignment 1 Results (LSH, Hypercube, IVFFlat, IVFPQ)
 

@@ -46,33 +46,11 @@ class MLPClassifier(nn.Module):
         self.network = nn.Sequential(*layers)
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Forward pass through the network.
-        
-        Args:
-            x: Input batch, shape [batch_size, input_dim]
-               Should be float32 tensor on same device as model
-        
-        Returns:
-            logits: Output logits, shape [batch_size, num_partitions]
-                   Raw scores before softmax (for use with CrossEntropyLoss)
-        """
+        """Forward pass through the network."""
         return self.network(x)
     
     def get_config(self) -> Dict[str, int]:
-        """
-        Return model configuration for serialization.
-        
-        This configuration can be saved with the model weights to enable
-        reconstruction of the model architecture during loading.
-        
-        Returns:
-            Dictionary with model architecture parameters:
-            - input_dim: Input dimensionality
-            - num_partitions: Number of output classes
-            - hidden_dim: Hidden layer width
-            - num_layers: Number of hidden layers
-        """
+        """Return model configuration for serialization."""
         return {
             'input_dim': self.input_dim,
             'num_partitions': self.num_partitions,
@@ -81,33 +59,12 @@ class MLPClassifier(nn.Module):
         }
     
     def predict_probabilities(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Predict partition probabilities (with softmax).
-        
-        Convenience method for inference that applies softmax to logits.
-        
-        Args:
-            x: Input batch, shape [batch_size, input_dim]
-        
-        Returns:
-            probs: Partition probabilities, shape [batch_size, num_partitions]
-                  Each row sums to 1.0
-        """
+        """Predict partition probabilities with softmax."""
         logits = self.forward(x)
         return torch.softmax(logits, dim=1)
     
     def predict_top_k(self, x: torch.Tensor, k: int = 1) -> torch.Tensor:
-        """
-        Predict top-k partition indices.
-        
-        Args:
-            x: Input batch, shape [batch_size, input_dim]
-            k: Number of top partitions to return
-        
-        Returns:
-            top_k_indices: Top-k partition indices, shape [batch_size, k]
-                          Indices sorted by probability (highest first)
-        """
+        """Predict top-k partition indices sorted by probability."""
         probs = self.predict_probabilities(x)
         _, top_k_indices = torch.topk(probs, k, dim=1)
         return top_k_indices
@@ -127,41 +84,7 @@ def train_partition_classifier(
     seed: int = 42,
     verbose: bool = True
 ) -> tuple:
-    """
-    Train MLP classifier for partition prediction.
-    
-    Trains a PartitionMLP to map data points to their KaHIP partition labels.
-    Uses CrossEntropyLoss and Adam optimizer with train/val split for monitoring.
-    
-    Args:
-        points: Data points, shape [n, d]
-        labels: Partition labels, shape [n], values in [0, m-1]
-        input_dim: Input dimensionality (should match points.shape[1])
-        num_partitions: Number of partitions (should match max(labels) + 1)
-        hidden_dim: Hidden layer width (default 64)
-        num_layers: Number of hidden layers (default 3)
-        epochs: Number of training epochs (default 50)
-        batch_size: Batch size for training (default 128)
-        learning_rate: Learning rate for Adam optimizer (default 0.001)
-        val_split: Validation set fraction, 0.1 = 10% (default 0.1)
-        seed: Random seed for reproducibility (default 42)
-        verbose: Print training progress (default True)
-    
-    Returns:
-        model: Trained MLPClassifier on CPU
-        history: Training history dict with keys:
-                - 'train_loss': List of training losses per epoch
-                - 'train_acc': List of training accuracies per epoch
-                - 'val_loss': List of validation losses per epoch
-                - 'val_acc': List of validation accuracies per epoch
-    
-    Example:
-        >>> points = np.random.randn(10000, 784).astype(np.float32)
-        >>> labels = np.random.randint(0, 100, 10000)
-        >>> model, history = train_partition_classifier(
-        ...     points, labels, input_dim=784, num_partitions=100, epochs=10
-        ... )
-    """
+    """Train MLP classifier to map data points to their KaHIP partition labels."""
     from torch.utils.data import TensorDataset, DataLoader
 
     # Basic argument checks

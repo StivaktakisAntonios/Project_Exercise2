@@ -61,23 +61,12 @@ def search_query(
     return candidates, distances, top_n_indices, top_n_distances
 
 
-def compute_ground_truth(
+def compute_exact_knn(
     query: np.ndarray,
     dataset: np.ndarray,
     N: int = 1
 ) -> Tuple[np.ndarray, np.ndarray]:
-    """
-    Compute exact nearest neighbors over full dataset (ground truth).
-    
-    Args:
-        query: Query vector (d,)
-        dataset: Full dataset (n, d)
-        N: Number of nearest neighbors
-        
-    Returns:
-        true_indices: Ground truth neighbor indices
-        true_distances: Ground truth neighbor distances
-    """
+    """Compute exact nearest neighbors over full dataset (ground truth)."""
     distances = np.linalg.norm(dataset - query, axis=1)
     sorted_indices = np.argsort(distances)
     
@@ -92,17 +81,7 @@ def compute_recall_at_n(
     true_indices: np.ndarray,
     N: int
 ) -> float:
-    """
-    Compute Recall@N: fraction of true neighbors found in approximate results.
-    
-    Args:
-        approx_indices: Approximate neighbor indices (up to N)
-        true_indices: Ground truth neighbor indices (N)
-        N: Number of neighbors
-        
-    Returns:
-        Recall@N as float
-    """
+    """Compute Recall@N: fraction of true neighbors found in approximate results."""
     if N == 0:
         return 1.0
     
@@ -120,19 +99,7 @@ def compute_approximation_factor(
     approx_distances: np.ndarray,
     true_distances: np.ndarray
 ) -> float:
-    """
-    Compute average approximation factor (AF) over all neighbors.
-    
-    AF = mean(d_approx / d_true) where d_approx is distance to approximate neighbor,
-    d_true is distance to corresponding ground truth neighbor.
-    
-    Args:
-        approx_distances: Distances to approximate neighbors
-        true_distances: Distances to ground truth neighbors
-        
-    Returns:
-        Average AF
-    """
+    """Compute average approximation factor: mean(d_approx / d_true)."""
     if len(true_distances) == 0 or len(approx_distances) == 0:
         return 1.0
     
@@ -153,17 +120,7 @@ def find_r_near_neighbors(
     query: np.ndarray,
     R: float
 ) -> np.ndarray:
-    """
-    Find all points within distance R from query (range search).
-    
-    Args:
-        dataset: Full dataset (n, d)
-        query: Query vector (d,)
-        R: Distance threshold
-        
-    Returns:
-        Array of indices within distance R
-    """
+    #Find all points within distance R from query (range search).
     distances = np.linalg.norm(dataset - query, axis=1)
     within_R = np.where(distances <= R)[0]
     return within_R
@@ -179,23 +136,7 @@ def batch_search(
     R: float = None,
     range_search: bool = True
 ) -> Tuple[List, Dict]:
-    """
-    Perform batch search over multiple queries and compute aggregate metrics.
-    
-    Args:
-        queries: Query set (q, d)
-        model: Trained MLP classifier
-        bins: Dictionary {partition_id: array of dataset indices}
-        dataset: Full dataset (n, d)
-        T: Number of top bins to probe
-        N: Number of nearest neighbors to return
-        R: Distance threshold for range search
-        range_search: Whether to perform range search
-        
-    Returns:
-        results: List of per-query results (dicts)
-        aggregate_metrics: Dict with aggregate metrics
-    """
+    """Perform batch search over multiple queries and compute aggregate metrics."""
     num_queries = len(queries)
     results = []
     
@@ -219,7 +160,7 @@ def batch_search(
         
         # Ground truth (exact search)
         t_start_true = time.time()
-        true_indices, true_distances = compute_ground_truth(query, dataset, N)
+        true_indices, true_distances = compute_exact_knn(query, dataset, N)
         t_true = time.time() - t_start_true
         
         # Range search if enabled
@@ -298,12 +239,6 @@ def write_output_file(
       - QPS: <double>
       - tApproximateAverage: <double>
       - tTrueAverage: <double>
-    
-    Args:
-        results: List of per-query result dicts
-        aggregate_metrics: Dict with aggregate metrics
-        output_path: Path to output file
-        N: Number of neighbors
     """
     with open(output_path, 'w') as f:
         # Write method name header

@@ -103,23 +103,7 @@ def build_knn(
 
 
 def get_graph_statistics(indices: np.ndarray, distances: np.ndarray) -> dict:
-    """
-    Compute statistics about the k-NN graph.
-    
-    Args:
-        indices: Neighbor indices, shape [n, k]
-        distances: Neighbor distances, shape [n, k]
-    
-    Returns:
-        Dictionary with statistics:
-        - n_points: Number of points
-        - k: Number of neighbors per point
-        - mean_distance: Mean distance to neighbors
-        - std_distance: Std deviation of distances
-        - min_distance: Minimum neighbor distance
-        - max_distance: Maximum neighbor distance
-        - mean_kth_distance: Mean distance to k-th neighbor
-    """
+    """Compute statistics about the k-NN graph."""
     n, k = indices.shape
     
     stats = {
@@ -139,33 +123,7 @@ def symmetrize_graph(
     indices: np.ndarray,
     distances: np.ndarray
 ) -> Tuple[List[Set[int]], Dict[Tuple[int, int], dict]]:
-    """
-    Convert directed k-NN graph to undirected graph.
-    
-    For each directed edge u→v in the k-NN graph, ensures the reverse edge
-    v→u exists. Tracks edge mutuality (whether both directions existed in
-    original k-NN graph) for subsequent weight assignment.
-    
-    Args:
-        indices: Neighbor indices from build_knn(), shape [n, k]
-        distances: Neighbor distances from build_knn(), shape [n, k]
-    
-    Returns:
-        adjacency: List of sets, adjacency[i] = set of neighbors of node i
-                  Represents undirected graph: if j in adjacency[i], then i in adjacency[j]
-        edge_info: Dict mapping (u, v) tuples to edge properties
-                  Format: {(u, v): {'distance': float, 'mutual': bool}}
-                  where u < v (canonical edge representation)
-                  - distance: Average distance if mutual, single direction if not
-                  - mutual: True if both u→v and v→u existed in original k-NN graph
-    
-    Example:
-        >>> indices = np.array([[1, 2], [0, 2], [0, 1]])  # 3 points, k=2
-        >>> distances = np.array([[1.0, 2.0], [1.0, 1.5], [2.0, 1.5]])
-        >>> adjacency, edge_info = symmetrize_graph(indices, distances)
-        >>> # All edges are mutual in this case
-        >>> print(edge_info[(0, 1)])  # {'distance': 1.0, 'mutual': True}
-    """
+    """Convert directed k-NN graph to undirected graph with edge mutuality tracking."""
     n, k = indices.shape
     
     # Track directed edges and their distances
@@ -223,32 +181,7 @@ def symmetrize_graph(
 
 
 def assign_edge_weights(edge_info: Dict[Tuple[int, int], dict]) -> Dict[Tuple[int, int], int]:
-    """
-    Assign integer weights to edges based on mutuality.
-    
-    Weight assignment reflects edge strength in the k-NN graph:
-    - Mutual edges (both directions in original k-NN) get weight = 2
-    - Non-mutual edges (only one direction) get weight = 1
-    
-    These weights are used by KaHIP for balanced graph partitioning,
-    where stronger (mutual) connections are preserved within partitions.
-    
-    Args:
-        edge_info: Dict from symmetrize_graph() with edge properties
-                  Format: {(u, v): {'distance': float, 'mutual': bool}}
-                  where u < v (canonical edge representation)
-    
-    Returns:
-        edge_weights: Dict mapping (u, v) to integer weight
-                     weight = 2 if edge_info[(u, v)]['mutual'] is True
-                     weight = 1 if edge_info[(u, v)]['mutual'] is False
-    
-    Example:
-        >>> edge_info = {(0, 1): {'distance': 1.5, 'mutual': True},
-        ...              (0, 2): {'distance': 2.0, 'mutual': False}}
-        >>> weights = assign_edge_weights(edge_info)
-        >>> print(weights)  # {(0, 1): 2, (0, 2): 1}
-    """
+    """Assign integer weights to edges: weight=2 for mutual edges, weight=1 for non-mutual."""
     edge_weights = {}
     
     for edge_key, info in edge_info.items():
@@ -264,33 +197,7 @@ def build_weighted_graph(
     indices: np.ndarray,
     distances: np.ndarray
 ) -> Tuple[List[Set[int]], Dict[Tuple[int, int], dict]]:
-    """
-    Build weighted undirected graph from k-NN graph.
-    
-    Combines symmetrization and weight assignment into single convenience function.
-    This is the main entry point for converting k-NN graph to weighted undirected
-    graph ready for KaHIP partitioning.
-    
-    Args:
-        indices: Neighbor indices from build_knn(), shape [n, k]
-        distances: Neighbor distances from build_knn(), shape [n, k]
-    
-    Returns:
-        adjacency: List of sets, adjacency[i] = set of neighbors of node i
-                  Represents undirected graph structure
-        edge_data: Dict mapping (u, v) to complete edge information
-                  Format: {(u, v): {'distance': float, 'mutual': bool, 'weight': int}}
-                  where u < v (canonical edge representation)
-                  - distance: Euclidean distance (averaged if mutual)
-                  - mutual: True if both u→v and v→u in original k-NN
-                  - weight: 2 if mutual, 1 if non-mutual
-    
-    Example:
-        >>> points = np.random.randn(100, 10).astype(np.float32)
-        >>> indices, distances = build_knn(points, k=5)
-        >>> adjacency, edge_data = build_weighted_graph(indices, distances)
-        >>> # Use edge_data for KaHIP partitioning
-    """
+    """Build weighted undirected graph from k-NN graph for KaHIP partitioning."""
     # Symmetrize graph and get edge info
     adjacency, edge_info = symmetrize_graph(indices, distances)
     
@@ -312,17 +219,7 @@ def build_weighted_graph(
 import numpy as np
 
 def load_knn_indices_bin(path: str):
-    """
-    Load k-NN indices from C++ binary file produced by build_knn_sift.
-    
-    File format:
-        [int32 n][int32 k][n*k int32 ids]
-    in row-major order: for each i in [0, n), we have k neighbor IDs.
-    
-    Returns:
-        indices: shape [n, k], dtype int64
-        distances: shape [n, k], dtype float32 (dummy, all ones)
-    """
+    """Load k-NN indices from C++ binary file (format: [n][k][n*k ids])."""
     with open(path, "rb") as f:
         header = np.fromfile(f, dtype=np.int32, count=2)
         if header.size < 2:

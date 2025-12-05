@@ -59,22 +59,6 @@ def write_kahip_graph(
       - [vertex_weight] neighbor1 edge_weight1 neighbor2 edge_weight2 ...
     
     Note: METIS uses 1-based indexing for nodes, so we add 1 to all node indices.
-    
-    Args:
-        output_path: Path to output graph file
-        vwgt: Vertex weights, shape [n_nodes]
-        xadj: Index array, shape [n_nodes + 1]
-        adjncy: Adjacency array (0-indexed)
-        adjcwgt: Edge weights array
-    
-    Example file format:
-        ```
-        3 3 11
-        1 2 2 3 1
-        1 1 2 3 2
-        1 1 1 2 2
-        ```
-        This represents a triangle with 3 nodes and 3 edges.
     """
     n_nodes = len(vwgt)
     # Number of undirected edges (each edge counted once)
@@ -111,25 +95,7 @@ def validate_csr_format(
     adjcwgt: np.ndarray,
     n_nodes: int
 ) -> bool:
-    """
-    Validate CSR format arrays for consistency.
-    
-    Checks:
-    - Array shapes are correct
-    - xadj is monotonically increasing
-    - All node indices in adjncy are valid
-    - Edge weights are positive
-    
-    Args:
-        vwgt: Vertex weights
-        xadj: Index array
-        adjncy: Adjacency array
-        adjcwgt: Edge weights
-        n_nodes: Expected number of nodes
-    
-    Returns:
-        True if valid, raises ValueError otherwise
-    """
+    """Validate CSR format arrays for consistency."""
     # Check shapes
     if len(vwgt) != n_nodes:
         raise ValueError(f"vwgt length {len(vwgt)} != n_nodes {n_nodes}")
@@ -172,32 +138,7 @@ def partition_graph(
     mode: int = 2,
     seed: int = 1
 ) -> np.ndarray:
-    """
-    Partition graph using KaHIP.
-    
-    Invokes KaHIP's kaffpa executable to partition the weighted undirected graph
-    into balanced partitions. Uses temporary files for graph and partition storage.
-    
-    Args:
-        adjacency: List of sets, adjacency[i] = neighbors of node i
-        edge_data: Dict mapping (u, v) to {'distance', 'mutual', 'weight'}
-        n_parts: Number of partitions (m parameter)
-        imbalance: Allowed imbalance (default 0.03 = 3%)
-        mode: KaHIP mode - 0=FAST, 1=ECO, 2=STRONG (default=2 for quality)
-        seed: Random seed for reproducibility
-    
-    Returns:
-        labels: Partition labels, shape [n_nodes], labels[i] ∈ {0, ..., n_parts-1}
-    
-    Raises:
-        FileNotFoundError: If kaffpa executable not found
-        RuntimeError: If kaffpa fails or produces invalid output
-    
-    Example:
-        >>> adjacency, edge_data = build_weighted_graph(indices, distances)
-        >>> labels = partition_graph(adjacency, edge_data, n_parts=100)
-        >>> print(labels.shape)  # (n_nodes,)
-    """
+    """Partition graph using KaHIP's kaffpa executable."""
     import subprocess
     import shutil
     import os
@@ -336,32 +277,7 @@ def partition_knn_graph(
     mode: int = 2,
     seed: int = 1
 ) -> np.ndarray:
-    """
-    Partition k-NN graph end-to-end.
-    
-    Convenience function that combines all steps:
-    1. Convert k-NN graph to weighted undirected graph
-    2. Convert to CSR format
-    3. Write METIS file
-    4. Invoke KaHIP
-    5. Parse and return partition labels
-    
-    Args:
-        indices: Neighbor indices from build_knn(), shape [n, k]
-        distances: Neighbor distances from build_knn(), shape [n, k]
-        n_parts: Number of partitions (m parameter)
-        imbalance: Allowed imbalance (default 0.03 = 3%)
-        mode: KaHIP mode - 0=FAST, 1=ECO, 2=STRONG (default=2)
-        seed: Random seed for reproducibility
-    
-    Returns:
-        labels: Partition labels, shape [n_nodes], labels[i] ∈ {0, ..., n_parts-1}
-    
-    Example:
-        >>> points = load_points('data.bin', 'mnist')
-        >>> indices, distances = build_knn(points, k=10)
-        >>> labels = partition_knn_graph(indices, distances, n_parts=100)
-    """
+    """Partition k-NN graph end-to-end using KaHIP."""
     from Exercise.Modules.graph_utils import build_weighted_graph
     
     # Build weighted undirected graph
