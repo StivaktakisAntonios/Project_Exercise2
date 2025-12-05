@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.installed.cfg
+*.egg
+.venv/
+venv/
+ENV/
+env/
+
+# PyTorch models
+*.pth
+*.pt
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# APM Framework
+.apm/
+
+# GitHub workflows
+.github/
+
+# Raw data files
+Raw_Data/
+
+# Generated indices
+indices/
+test_index*/
+
+# Results and logs
+outputs/
+*.log
+output_*.txt
+test_output*.txt
+
+# Virtual environment
+.venv/
+
+# .gitignore itself
+.gitignore
