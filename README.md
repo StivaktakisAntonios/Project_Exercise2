@@ -268,15 +268,19 @@ Each query includes approximate and true distances, followed by aggregate metric
 Pre-computed experimental results are available in `outputs/`:
 - `mnist_fast_N1_T5.txt` - MNIST with KaHIP FAST mode
 - `mnist_eco_N1_T5.txt` - MNIST with KaHIP ECO mode
+- `mnist_strong_N1_T5.txt` - MNIST with KaHIP STRONG mode
 - `sift_fast_N1_T5.txt` - SIFT (100 queries) with KaHIP FAST mode
 - `sift_eco_N1_T5.txt` - SIFT (100 queries) with KaHIP ECO mode
+- `sift_strong_N1_T5.txt` - SIFT (100 queries) with KaHIP STRONG mode
 - `results_summary.txt` - Comprehensive comparison and analysis
 
 **Key Results:**
 - MNIST ECO: 97.65% recall@1, 1.0015 AF, 117.63 QPS
 - MNIST FAST: 96.62% recall@1, 1.0021 AF, 113.86 QPS
-- SIFT ECO: 95.00% recall@1, 1.0011 AF (1M points, ECO mode critical)
+- MNIST STRONG: 96.85% recall@1, 1.0020 AF, 105.09 QPS
+- SIFT ECO: 95.00% recall@1, 1.0011 AF (1M points, ECO mode optimal)
 - SIFT FAST: 86.00% recall@1, 1.0251 AF (1M points)
+- SIFT STRONG: 93.00% recall@1, 1.0065 AF (1M points)
 
 ECO mode shows +9% recall improvement for large-scale datasets (SIFT 1M).
 

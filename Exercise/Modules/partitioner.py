@@ -309,7 +309,7 @@ def partition_graph(
                 capture_output=True,
                 text=True,
                 check=True,
-                timeout=28800  # 8 hours timeout for STRONG mode on large graphs (1M points)
+                timeout=72000  # 20 hours timeout for STRONG mode on large graphs (1M points)
             )
         except subprocess.CalledProcessError as e:
             raise RuntimeError(
@@ -318,7 +318,7 @@ def partition_graph(
                 f"Stderr: {e.stderr}"
             )
         except subprocess.TimeoutExpired:
-            raise RuntimeError(f"KaHIP (kaffpa) timed out after 28800 seconds (8 hours)")
+            raise RuntimeError(f"KaHIP (kaffpa) timed out after 72000 seconds (20 hours)")
         
         # Parse partition file
         if not os.path.exists(partition_file):

@@ -255,21 +255,28 @@ Based on systematic hyperparameter tuning:
 | Dataset | Points | Dimension | Build Time | MLP Acc | Recall@1 | QPS   |
 |---------|--------|-----------|------------|---------|----------|-------|
 | MNIST   | 60k    | 784       | ~40s       | 80.82%  | 98.30%   | 108.98|
-| SIFT    | 1M     | 128       | ~40 min    | -       | 95.00%   | 36.24 |
+| SIFT    | 1M     | 128       | ~40 min    | 72.35%  | 95.00%   | 36.24 |
 
 **Observations:**
 - **Linear scaling**: Build time grows linearly with dataset size
 - **Recall degradation**: -3.3% recall on 1M points (expected for larger datasets)
 - **QPS impact**: 3× slower on SIFT due to larger candidate sets
 
-### 5.2 Partition Quality vs Dataset Size
+### 5.2 KaHIP Mode Comparison
 
-| Dataset | Partitions | Avg Bin Size | Partitioning Time | Quality Mode Impact |
-|---------|------------|--------------|-------------------|---------------------|
-| MNIST   | 100        | 600          | 21s (ECO)         | +1% (ECO vs FAST)   |
-| SIFT    | 100        | 10,000       | 20 min (ECO)      | +9% (ECO vs FAST)   |
+| Dataset | Mode   | Partitioning Time | Recall@1 | AF     | QPS   |
+|---------|--------|-------------------|----------|--------|-------|
+| MNIST   | FAST   | 6s                | 96.62%   | 1.0021 | 113.86|
+| MNIST   | ECO    | 21s               | 97.65%   | 1.0015 | 117.63|
+| MNIST   | STRONG | 211s              | 96.85%   | 1.0020 | 105.09|
+| SIFT    | FAST   | ~10 min           | 86.00%   | 1.0251 | 36.63 |
+| SIFT    | ECO    | ~20 min           | 95.00%   | 1.0011 | 36.24 |
+| SIFT    | STRONG | ~11 hours         | 93.00%   | 1.0065 | 35.95 |
 
-**Conclusion:** ECO mode becomes **essential** for datasets >500k points.
+**Conclusion:** 
+- **MNIST**: ECO mode optimal (best recall-speed tradeoff)
+- **SIFT**: ECO mode superior (+9% recall vs FAST, same speed as STRONG)
+- **STRONG**: Overkill for smaller datasets, marginal gains on SIFT
 
 ---
 
