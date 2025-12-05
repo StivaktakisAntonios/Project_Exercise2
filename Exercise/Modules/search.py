@@ -1,8 +1,3 @@
-"""
-Search module for Neural LSH.
-Implements multi-probe search, exact distance computation, and metrics.
-"""
-
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -18,24 +13,7 @@ def search_query(
     T: int = 5,
     N: int = 1
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    """
-    Multi-probe search for a single query.
-    
-    Args:
-        query: Query vector (d,)
-        model: Trained MLP classifier
-        bins: Dictionary {partition_id: array of dataset indices}
-        dataset: Full dataset (n, d)
-        T: Number of top bins to probe
-        N: Number of nearest neighbors to return
-        
-    Returns:
-        candidate_indices: Array of candidate indices from top-T bins
-        candidate_distances: Distances to candidates
-        top_n_indices: Top N neighbor indices (from candidates)
-        top_n_distances: Top N neighbor distances
-    """
-    # Enforce CPU
+    """Multi-probe search for a single query."""
     device = torch.device("cpu")
     
     # Convert query to torch tensor

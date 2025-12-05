@@ -1,37 +1,4 @@
 #!/usr/bin/env python3
-"""
-nlsh_search.py — Neural LSH Query Search
-
-Performs approximate nearest neighbor search using a pre-built Neural LSH index.
-
-Pipeline:
-1. Load index (model + inverted file + metadata)
-2. Load dataset and queries
-3. For each query:
-   - Compute softmax probabilities over partitions
-   - Select top-T bins (multi-probe)
-   - Collect candidate points from selected bins
-   - Perform exact distance computation on candidates
-   - Return top-N nearest neighbors
-4. Compute metrics (Recall@N, Average AF, QPS, timing)
-5. Write output in Assignment 1 format
-
-Usage:
-    python nlsh_search.py -d <dataset> -q <queries> -i <index> -o <output> -type <sift|mnist> [options]
-
-Required Arguments:
-    -d              Path to dataset file
-    -q              Path to query file
-    -i              Path to index directory
-    -o              Path to output file
-    -type           Dataset type: 'sift' or 'mnist'
-
-Optional Arguments:
-    -N              Number of nearest neighbors to return (default: 1)
-    -R              Radius for R-near neighbors (default: 2000 for MNIST, 2800 for SIFT)
-    -T              Number of top bins to probe (default: 5)
-    -range          Compute R-near neighbors: true or false (default: true)
-"""
 
 import argparse
 import sys

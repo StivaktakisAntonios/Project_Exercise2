@@ -1,10 +1,3 @@
-"""
-Models Module for Neural LSH Project
-
-This module provides the MLP classifier architecture for partition prediction.
-The MLP serves as the learned hash function, mapping data points to partition bins.
-"""
-
 import torch
 import torch.nn as nn
 import numpy as np
@@ -17,36 +10,7 @@ RANDOM_SEED = 42
 
 
 class MLPClassifier(nn.Module):
-    """
-    MLP classifier for Neural LSH partition prediction.
-    
-    This network learns to map input vectors to partition labels assigned by KaHIP.
-    The learned mapping serves as a hash function for approximate nearest neighbor search.
-    
-    Architecture:
-    - Input layer: input_dim → hidden_dim (ReLU)
-    - Hidden layers: (num_layers - 1) × [hidden_dim → hidden_dim (ReLU)]
-    - Output layer: hidden_dim → num_partitions (logits, no activation)
-    
-    Training uses CrossEntropyLoss which applies softmax internally.
-    At inference, softmax converts logits to probabilities for top-T partition selection.
-    
-    Args:
-        input_dim: Dimensionality of input vectors (d)
-                  e.g., 784 for MNIST, 128 for SIFT
-        num_partitions: Number of output classes/partitions (m)
-                       e.g., 100 for typical Neural LSH configuration
-        hidden_dim: Width of hidden layers (default 64)
-        num_layers: Number of hidden layers (default 3)
-                   Includes input and intermediate layers, excludes output
-    
-    Example:
-        >>> model = MLPClassifier(input_dim=784, num_partitions=100, hidden_dim=64, num_layers=3)
-        >>> model.to(DEVICE)
-        >>> x = torch.randn(32, 784)  # batch of 32 MNIST images
-        >>> logits = model(x)  # shape: [32, 100]
-        >>> probs = torch.softmax(logits, dim=1)  # convert to probabilities
-    """
+    """MLP classifier for partition prediction."""
     
     def __init__(
         self,

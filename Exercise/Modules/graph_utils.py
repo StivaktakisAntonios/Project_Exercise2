@@ -1,10 +1,3 @@
-"""
-Graph Utilities Module for Neural LSH Project
-
-This module provides k-NN graph construction using pure NumPy brute-force
-distance computation with batched processing for memory efficiency.
-"""
-
 import numpy as np
 from typing import Tuple, Optional, List, Set, Dict
 from tqdm import tqdm
@@ -17,39 +10,8 @@ def build_knn(
     max_points: Optional[int] = None,
     show_progress: bool = True
 ) -> Tuple[np.ndarray, np.ndarray]:
-    """
-    Build k-NN graph using brute-force Euclidean distance.
-    
-    Uses batched distance computation for memory efficiency on large datasets.
-    Points are processed in batches to avoid memory overflow.
-    
-    Args:
-        points: Dataset points, shape [n, d]
-        k: Number of nearest neighbors per point
-        batch_size: Process points in batches for memory efficiency (default: 1000)
-        max_points: Optional limit on number of points to process (e.g., first 100k
-                   for SIFT). If None, process all points. Useful for testing or
-                   reducing computational cost on large datasets.
-        show_progress: Show tqdm progress bar during construction (default: True)
-    
-    Returns:
-        indices: Neighbor indices, shape [n_used, k] (int64)
-        distances: Neighbor distances, shape [n_used, k] (float32)
-        
-        where n_used = min(n, max_points) if max_points is set, else n
-    
-    Raises:
-        ValueError: If k <= 0, points is not 2D, or k >= n_used
-    
-    Example:
-        >>> points = np.random.randn(1000, 128).astype(np.float32)
-        >>> indices, distances = build_knn(points, k=10)
-        >>> print(indices.shape)  # (1000, 10)
-        
-        >>> # Process only first 100k points from large dataset
-        >>> indices, distances = build_knn(points, k=10, max_points=100000)
-    """
-    # Validate inputs
+    """Build k-NN graph using brute-force Euclidean distance."""
+    # Validate input
     if points.ndim != 2:
         raise ValueError(f"Points must be 2D array, got shape {points.shape}")
     

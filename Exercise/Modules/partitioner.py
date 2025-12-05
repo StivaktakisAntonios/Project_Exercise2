@@ -1,11 +1,3 @@
-"""
-Partitioner Module for Neural LSH Project
-
-This module provides graph partitioning functionality using KaHIP.
-Converts weighted undirected graphs to CSR format and invokes KaHIP
-for balanced partitioning.
-"""
-
 import numpy as np
 import os
 import tempfile
@@ -17,33 +9,7 @@ def graph_to_csr(
     edge_data: Dict[Tuple[int, int], dict],
     n_nodes: int
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    """
-    Convert weighted undirected graph to CSR format for KaHIP.
-    
-    CSR (Compressed Sparse Row) format represents the graph efficiently:
-    - vwgt: Vertex weights (uniform weights = 1 for our use case)
-    - xadj: Index array indicating where each node's neighbors start in adjncy
-    - adjncy: Concatenated neighbor lists for all nodes
-    - adjcwgt: Edge weights corresponding to edges in adjncy
-    
-    Args:
-        adjacency: List of sets, adjacency[i] = neighbors of node i
-        edge_data: Dict mapping (u, v) to {'distance', 'mutual', 'weight'}
-                  where u < v (canonical edge representation)
-        n_nodes: Total number of nodes
-    
-    Returns:
-        vwgt: Vertex weights, shape [n_nodes] (all ones for uniform weights)
-        xadj: Index array, shape [n_nodes + 1], xadj[i] = start index for node i
-        adjncy: Adjacency array, concatenated neighbors for all nodes
-        adjcwgt: Edge weights array, corresponding weights for adjncy edges
-    
-    Example:
-        >>> adjacency = [{1, 2}, {0, 2}, {0, 1}]  # Triangle graph
-        >>> edge_data = {(0,1): {'weight': 2}, (0,2): {'weight': 1}, (1,2): {'weight': 2}}
-        >>> vwgt, xadj, adjncy, adjcwgt = graph_to_csr(adjacency, edge_data, 3)
-    """
-    # Initialize vertex weights (all 1s for uniform)
+    """Convert weighted undirected graph to CSR format for KaHIP."""
     vwgt = np.ones(n_nodes, dtype=np.int32)
     
     # Build adjacency and weight arrays

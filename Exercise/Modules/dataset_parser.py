@@ -1,12 +1,3 @@
-"""
-Dataset Parser Module for Neural LSH Project
-
-This module provides binary data loaders for MNIST and SIFT datasets.
-Compatible with Assignment 1 data formats:
-- MNIST: idx3-ubyte format (input.idx3-ubyte, query.idx3-ubyte)
-- SIFT: fvecs format (sift_base.fvecs, sift_query.fvecs)
-"""
-
 import numpy as np
 import os
 import struct
@@ -14,27 +5,7 @@ from typing import Literal
 
 
 def load_points(path: str, dtype: Literal["mnist", "sift"]) -> np.ndarray:
-    """
-    Load dataset points from binary file.
-    
-    Args:
-        path: Path to binary file containing dataset vectors
-        dtype: Dataset type, either "mnist" or "sift"
-    
-    Returns:
-        numpy.ndarray: Array of shape [n, d] where n is number of vectors
-                      and d is dimensionality
-    
-    Raises:
-        FileNotFoundError: If the file does not exist
-        ValueError: If binary format is invalid or dtype is unsupported
-    
-    Example:
-        >>> points = load_points("input.idx3-ubyte", "mnist")
-        >>> print(points.shape)  # (60000, 784) for MNIST
-        >>> points = load_points("sift_base.fvecs", "sift")
-        >>> print(points.shape)  # (1000000, 128) for SIFT
-    """
+    """Load dataset points from binary file."""
     if dtype == "mnist":
         return _load_mnist_idx(path)
     elif dtype == "sift":
@@ -44,27 +15,7 @@ def load_points(path: str, dtype: Literal["mnist", "sift"]) -> np.ndarray:
 
 
 def load_queries(path: str, dtype: Literal["mnist", "sift"]) -> np.ndarray:
-    """
-    Load query points from binary file.
-    
-    Args:
-        path: Path to binary file containing query vectors
-        dtype: Dataset type, either "mnist" or "sift"
-    
-    Returns:
-        numpy.ndarray: Array of shape [q, d] where q is number of queries
-                      and d is dimensionality
-    
-    Raises:
-        FileNotFoundError: If the file does not exist
-        ValueError: If binary format is invalid or dtype is unsupported
-    
-    Example:
-        >>> queries = load_queries("query.idx3-ubyte", "mnist")
-        >>> print(queries.shape)  # (100, 784) for MNIST queries
-        >>> queries = load_queries("sift_query.fvecs", "sift")
-        >>> print(queries.shape)  # (10000, 128) for SIFT queries
-    """
+    """Load query points from binary file."""
     if dtype == "mnist":
         return _load_mnist_idx(path)
     elif dtype == "sift":

@@ -1,12 +1,4 @@
 #!/usr/bin/env python3
-"""
-index_io.py — Index Persistence Module
-
-Handles saving and loading of Neural LSH index components:
-- Inverted index (bins.npz): mapping from partition ID to list of point indices
-- Trained model (model.pth): PyTorch state dict
-- Metadata (meta.json): configuration and parameters
-"""
 
 import json
 import os
@@ -19,33 +11,17 @@ from Exercise.Modules.models import MLPClassifier
 
 
 def build_inverted_index(labels: np.ndarray) -> Dict[int, np.ndarray]:
-    """
-    Build inverted index from partition labels.
-    
-    Args:
-        labels: Array of shape [n] with partition assignments (0 to m-1)
-        
-    Returns:
-        Dictionary mapping partition_id -> array of point indices
-        
-    Example:
-        >>> labels = np.array([0, 2, 0, 1, 2])
-        >>> bins = build_inverted_index(labels)
-        >>> bins[0]  # Points 0 and 2 in partition 0
-        array([0, 2])
-        >>> bins[1]  # Point 3 in partition 1
-        array([3])
-    """
+    """Build inverted index from partition labels."""
     n = len(labels)
     num_partitions = int(labels.max()) + 1
     
-    # Build bins dictionary
+    # Initialize bins
     bins = {}
     for partition_id in range(num_partitions):
         indices = np.where(labels == partition_id)[0]
         bins[partition_id] = indices
     
-    # Verify all points mapped
+    # Verify all points are assigned
     total_mapped = sum(len(v) for v in bins.values())
     assert total_mapped == n, f"Mismatch: {total_mapped} mapped vs {n} total points"
     
@@ -58,36 +34,10 @@ def save_index(
     model: MLPClassifier,
     metadata: Dict[str, Any]
 ) -> None:
-    """
-    Save Neural LSH index to disk.
-    
-    Creates directory structure:
-        index_path/
-            bins.npz       - inverted index
-            model.pth      - trained MLP state dict
-            meta.json      - metadata
-    
-    Args:
-        index_path: Directory path for index (will be created if doesn't exist)
-        bins: Dictionary mapping partition_id -> array of point indices
-        model: Trained MLPClassifier instance
-        metadata: Dictionary with configuration:
-            - num_partitions (int): number of partitions
-            - input_dim (int): feature dimension
-            - dataset_type (str): 'mnist' or 'sift'
-            - knn (int): k for k-NN graph
-            - partition_params (dict): KaHIP parameters
-            - model_config (dict): MLP architecture
-            - training_params (dict): training hyperparameters
-            
-    Raises:
-        ValueError: If metadata is missing required fields
-        IOError: If saving fails
-    """
+    """Save Neural LSH index to disk."""
     index_path = Path(index_path)
     index_path.mkdir(parents=True, exist_ok=True)
     
-    # Validate metadata
     required_fields = ['num_partitions', 'input_dim', 'dataset_type']
     for field in required_fields:
         if field not in metadata:

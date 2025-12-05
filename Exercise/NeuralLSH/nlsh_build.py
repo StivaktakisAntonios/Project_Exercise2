@@ -1,34 +1,4 @@
 #!/usr/bin/env python3
-"""
-nlsh_build.py — Neural LSH Index Builder
-
-Builds Neural LSH index through the following pipeline:
-1. Load dataset
-2. Build k-NN graph using IVFFlat (C++ from Assignment 1)
-3. Partition k-NN graph using KaHIP (via partition_knn_graph)
-4. Train MLP classifier on partition labels
-5. Save index (model + inverted file + metadata)
-
-Usage:
-    python nlsh_build.py -d <input_file> -i <index_path> -type <sift|mnist> [options]
-
-Required Arguments:
-    -d              Path to input dataset file
-    -i              Path to output index directory
-    -type           Dataset type: 'sift' or 'mnist'
-
-Optional Arguments:
-    --knn           Number of nearest neighbors (default: 10)
-    -m              Number of partitions/bins (default: 100)
-    --imbalance     KaHIP imbalance tolerance (default: 0.03)
-    --kahip_mode    KaHIP mode: 0=FAST, 1=ECO, 2=STRONG (default: 2)
-    --layers        MLP hidden layers (default: 3)
-    --nodes         MLP hidden layer width (default: 64)
-    --epochs        Training epochs (default: 10)
-    --batch_size    Training batch size (default: 128)
-    --lr            Learning rate (default: 0.001)
-    --seed          Random seed (default: 1)
-"""
 
 import argparse
 import sys
